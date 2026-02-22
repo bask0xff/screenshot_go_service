@@ -1,16 +1,35 @@
 version: "3"
 services:
+  api:
+    build:
+      context: ./app     
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    env_file:
+      - .env
+    depends_on:
+      - browserless
+#      - postgres
+
   browserless:
     image: ghcr.io/browserless/chromium
     environment:
-      TOKEN: your_secret_token
+      TOKEN: ${BROWSERLESS_TOKEN}
       MAX_CONCURRENT_SESSIONS: 5
     ports:
-      - "3002:3002"
+      - "3002:3000"
 
-  api:
-    build: .
-    ports:
-      - "8082:8082"
-    depends_on:
-      - browserless
+#  postgres:
+#    image: postgres:16
+#    environment:
+#      POSTGRES_DB: ${POSTGRES_DB}
+#      POSTGRES_USER: ${POSTGRES_USER}
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+#    volumes:
+#      - pgdata:/var/lib/postgresql/data
+#    ports:
+#      - "5432:5432"
+
+volumes:
+  pgdata:
