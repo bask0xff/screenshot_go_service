@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"golang.org/x/crypto/bcrypt"
@@ -52,7 +53,8 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 	user, err := h.storage.CreateUser(req.Email, string(hash))
 	if err != nil {
-		jsonError(w, "email already exists", http.StatusConflict)
+		log.Printf("CreateUser error: %v", err)
+		jsonError(w, "internal error", http.StatusInternalServerError)
 		return
 	}
 
@@ -85,6 +87,7 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	apiKey, err := h.storage.GetAPIKeyByUserID(user.ID)
 	if err != nil {
+		log.Printf("GetAPIKeyByUserID error: %v", err)
 		jsonError(w, "internal error", http.StatusInternalServerError)
 		return
 	}

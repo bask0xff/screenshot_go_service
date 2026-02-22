@@ -1,0 +1,813 @@
+Microsoft Windows [Version 10.0.19045.6456]
+(c) Microsoft Corporation. All rights reserved.
+
+d:\Projects\2026\screenshot_go_service\app>go mod init screenshot-api
+go: creating new go.mod: module screenshot-api
+go: to add module requirements and sums:
+        go mod tidy
+
+d:\Projects\2026\screenshot_go_service\app>go mod tidy
+
+d:\Projects\2026\screenshot_go_service\app>dir
+ Volume in drive D is DATA
+ Volume Serial Number is 2A2C-1FAD
+
+ Directory of d:\Projects\2026\screenshot_go_service\app
+
+22.02.2026  07:02    <DIR>          .
+22.02.2026  07:02    <DIR>          ..
+22.02.2026  07:00               244 Dockerfile
+22.02.2026  07:02                33 go.mod
+22.02.2026  05:22             1 639 main.go
+               3 File(s)          1 916 bytes
+               2 Dir(s)   5 281 804 288 bytes free
+
+d:\Projects\2026\screenshot_go_service\app>dir
+ Volume in drive D is DATA
+ Volume Serial Number is 2A2C-1FAD
+
+ Directory of d:\Projects\2026\screenshot_go_service\app
+
+22.02.2026  07:02    <DIR>          .
+22.02.2026  07:02    <DIR>          ..
+22.02.2026  07:07               235 Dockerfile
+22.02.2026  07:02                33 go.mod
+22.02.2026  07:06             1 403 main.go
+               3 File(s)          1 671 bytes
+               2 Dir(s)   5 270 761 472 bytes free
+
+d:\Projects\2026\screenshot_go_service\app>
+d:\Projects\2026\screenshot_go_service\app>docker system df
+TYPE            TOTAL     ACTIVE    SIZE      RECLAIMABLE
+Images          8         8         7.374GB   8.442MB (0%)
+Containers      8         8         5.363MB   0B (0%)
+Local Volumes   3         3         48.19MB   0B (0%)
+Build Cache     59        0         476.6MB   476.6MB
+
+d:\Projects\2026\screenshot_go_service\app>docker images
+REPOSITORY                     TAG                   IMAGE ID       CREATED             SIZE
+screenshot_go_service-api      latest                d0fb02914c0b   43 minutes ago      16.8MB
+vue-notus-main-frontend        latest                6fc58cf364a2   About an hour ago   1.71GB
+anticaptchaio-frontend         latest                1fd85a683373   About an hour ago   1.18GB
+anticaptchaio-backend          latest                4dfb906fc1a9   About an hour ago   1.39GB
+ghcr.io/browserless/chromium   latest                c2d51226859d   2 days ago          2.6GB
+postgres                       16-alpine             87e04d274d18   9 days ago          276MB
+redis                          7.2-alpine            60b073769eaa   3 weeks ago         40.9MB
+rabbitmq                       3-management-alpine   1031d41f3f16   2 months ago        176MB
+
+d:\Projects\2026\screenshot_go_service\app>
+d:\Projects\2026\screenshot_go_service\app>
+d:\Projects\2026\screenshot_go_service\app>go get github.com/lib/pq
+go: downloading github.com/lib/pq v1.11.2
+go: github.com/lib/pq@v1.11.2: verifying module: invalid GOSUMDB: malformed verifier id
+
+d:\Projects\2026\screenshot_go_service\app>go get github.com/lib/pqgo get github.com/golang-migrate/migrate/v4go get github.com/golang-migrate/migrate/v4/database/postgresgo get github.com/golang-migrate/migrate/v4/source/filego get golang.org/x/crypto/bcrypt
+go: downloading golang.org/x/crypto v0.48.0
+go: downloading github.com/golang-migrate/migrate/v4 v4.19.1
+go: module github.com/lib/pqgo: git ls-remote -q origin in C:\Users\sandr\go\pkg\mod\cache\vcs\b21401251205e8b6c2f04738a54896fe65e340c701d67c41e331fbad70934a27: exit status 128:
+        remote: Repository not found.
+        fatal: repository 'https://github.com/lib/pqgo/' not found
+go: malformed module path "get": missing dot in first path element
+go: github.com/golang-migrate/migrate/v4go: github.com/golang-migrate/migrate@v1.3.2: verifying go.mod: invalid GOSUMDB: malformed verifier id
+go: malformed module path "get": missing dot in first path element
+go: github.com/golang-migrate/migrate/v4/database/postgresgo: github.com/golang-migrate/migrate/v4@v4.19.1: verifying module: invalid GOSUMDB: malformed verifier id
+go: malformed module path "get": missing dot in first path element
+go: github.com/golang-migrate/migrate/v4/source/filego: github.com/golang-migrate/migrate/v4@v4.19.1: verifying module: invalid GOSUMDB: malformed verifier id
+go: malformed module path "get": missing dot in first path element
+go: golang.org/x/crypto/bcrypt: golang.org/x/crypto@v0.48.0: verifying module: invalid GOSUMDB: malformed verifier id
+
+d:\Projects\2026\screenshot_go_service\app>go get github.com/lib/pq
+go: downloading github.com/lib/pq v1.11.2
+go: github.com/lib/pq@v1.11.2: verifying module: invalid GOSUMDB: malformed verifier id
+
+d:\Projects\2026\screenshot_go_service\app>go get github.com/golang-migrate/migrate/v4
+go: downloading github.com/golang-migrate/migrate/v4 v4.19.1
+go: github.com/golang-migrate/migrate/v4@v4.19.1: verifying module: invalid GOSUMDB: malformed verifier id
+
+d:\Projects\2026\screenshot_go_service\app>go get github.com/golang-migrate/migrate/v4/database/postgres
+go: downloading github.com/golang-migrate/migrate/v4 v4.19.1
+go: github.com/golang-migrate/migrate/v4/database/postgres: github.com/golang-migrate/migrate/v4@v4.19.1: verifying module: invalid GOSUMDB: malformed verifier id
+
+d:\Projects\2026\screenshot_go_service\app>go get github.com/golang-migrate/migrate/v4/source/file
+go: downloading github.com/golang-migrate/migrate/v4 v4.19.1
+go: github.com/golang-migrate/migrate/v4/source/file: github.com/golang-migrate/migrate/v4@v4.19.1: verifying module: invalid GOSUMDB: malformed verifier id
+
+d:\Projects\2026\screenshot_go_service\app>go get golang.org/x/crypto/bcrypt
+go: downloading golang.org/x/crypto v0.48.0
+go: golang.org/x/crypto/bcrypt: golang.org/x/crypto@v0.48.0: verifying module: invalid GOSUMDB: malformed verifier id
+
+d:\Projects\2026\screenshot_go_service\app>set GONOSUMCHECK=*set GOFLAGS=-insecureset GONOSUMDB=*set GOFLAGS=set GONOSUMCHECK=*go env -w GONOSUMDB=*go env -w GOFLAGS=
+
+d:\Projects\2026\screenshot_go_service\app>go get github.com/lib/pq
+go: downloading github.com/lib/pq v1.11.2
+go: github.com/lib/pq@v1.11.2: verifying module: invalid GOSUMDB: malformed verifier id
+
+d:\Projects\2026\screenshot_go_service\app>go env -w GONOSUMDB=*
+
+d:\Projects\2026\screenshot_go_service\app>go env -w GOFLAGS=-insecure
+
+d:\Projects\2026\screenshot_go_service\app>set GONOSUMCHECK=*
+
+d:\Projects\2026\screenshot_go_service\app>set GOFLAGS=-insecure
+
+d:\Projects\2026\screenshot_go_service\app>set GONOSUMDB=*
+
+d:\Projects\2026\screenshot_go_service\app>set GOFLAGS=
+
+d:\Projects\2026\screenshot_go_service\app>set GONOSUMCHECK=*
+
+d:\Projects\2026\screenshot_go_service\app>go env -w GONOSUMDB=*
+
+d:\Projects\2026\screenshot_go_service\app>go env -w GOFLAGS=
+
+d:\Projects\2026\screenshot_go_service\app>go get github.com/lib/pq
+go: downloading github.com/lib/pq v1.11.2
+go: added github.com/lib/pq v1.11.2
+
+d:\Projects\2026\screenshot_go_service\app>go get github.com/golang-migrate/migrate/v4
+go: downloading github.com/golang-migrate/migrate/v4 v4.19.1
+go: downloading github.com/golang-migrate/migrate v3.5.4+incompatible
+go: github.com/golang-migrate/migrate/v4@v4.19.1 requires go >= 1.24.0; switching to go1.25.7
+go: downloading go1.25.7 (windows/amd64)
+go: download go1.25.7: golang.org/toolchain@v0.0.1-go1.25.7.windows-amd64: verifying module: invalid GOSUMDB: malformed verifier id
+
+d:\Projects\2026\screenshot_go_service\app>go get github.com/golang-migrate/migrate/v4
+go: github.com/golang-migrate/migrate/v4@v4.19.1 requires go >= 1.24.0; switching to go1.25.7
+go: downloading go1.25.7 (windows/amd64)
+go: download go1.25.7: golang.org/toolchain@v0.0.1-go1.25.7.windows-amd64: verifying module: invalid GOSUMDB: malformed verifier id
+
+d:\Projects\2026\screenshot_go_service\app>go get github.com/golang-migrate/migrate/v4/source/file
+go: github.com/golang-migrate/migrate/v4@v4.19.1 requires go >= 1.24.0; switching to go1.25.7
+go: downloading go1.25.7 (windows/amd64)
+go: download go1.25.7: golang.org/toolchain@v0.0.1-go1.25.7.windows-amd64: verifying module: invalid GOSUMDB: malformed verifier id
+
+d:\Projects\2026\screenshot_go_service\app>go get golang.org/x/crypto/bcrypt
+go: downloading golang.org/x/crypto v0.48.0
+go: golang.org/x/crypto@v0.48.0 requires go >= 1.24.0; switching to go1.25.7
+go: downloading go1.25.7 (windows/amd64)
+go: download go1.25.7: golang.org/toolchain@v0.0.1-go1.25.7.windows-amd64: verifying module: invalid GOSUMDB: malformed verifier id
+
+d:\Projects\2026\screenshot_go_service\app>go env -w GONOSUMDB=*
+
+d:\Projects\2026\screenshot_go_service\app>go env -w GOFLAGS=
+
+d:\Projects\2026\screenshot_go_service\app>go env -w GOFLAGS=-mod=mod
+
+d:\Projects\2026\screenshot_go_service\app>set GOFLAGS=
+
+d:\Projects\2026\screenshot_go_service\app>set GONOPROXY=
+
+d:\Projects\2026\screenshot_go_service\app>set GONOSUMDB=*
+
+d:\Projects\2026\screenshot_go_service\app>set GOFLAGS=
+
+d:\Projects\2026\screenshot_go_service\app>go get github.com/lib/pq
+
+d:\Projects\2026\screenshot_go_service\app>go get github.com/golang-migrate/migrate/v4
+go: github.com/golang-migrate/migrate/v4@v4.19.1 requires go >= 1.24.0; switching to go1.25.7
+go: downloading go1.25.7 (windows/amd64)
+go: download go1.25.7: golang.org/toolchain@v0.0.1-go1.25.7.windows-amd64: verifying module: invalid GOSUMDB: malformed verifier id
+
+d:\Projects\2026\screenshot_go_service\app>go get github.com/golang-migrate/migrate/v4/database/postgres
+go: github.com/golang-migrate/migrate/v4@v4.19.1 requires go >= 1.24.0; switching to go1.25.7
+go: downloading go1.25.7 (windows/amd64)
+go: download go1.25.7: golang.org/toolchain@v0.0.1-go1.25.7.windows-amd64: verifying module: invalid GOSUMDB: malformed verifier id
+
+d:\Projects\2026\screenshot_go_service\app>go env GONOSUMDB
+*
+
+d:\Projects\2026\screenshot_go_service\app>go env GOPROXY
+https://proxy.golang.org,direct
+
+d:\Projects\2026\screenshot_go_service\app>go env -w GOTOOLCHAIN=local
+
+d:\Projects\2026\screenshot_go_service\app>go get github.com/golang-migrate/migrate/v4
+go: github.com/golang-migrate/migrate/v4@v4.19.1 requires go >= 1.24.0 (running go 1.22.5; GOTOOLCHAIN=local)
+
+d:\Projects\2026\screenshot_go_service\app>go get golang.org/x/crypto/bcrypt
+go: golang.org/x/crypto/bcrypt: golang.org/x/crypto@v0.48.0 requires go >= 1.24.0 (running go 1.22.5; GOTOOLCHAIN=local)
+
+d:\Projects\2026\screenshot_go_service\app>go get github.com/golang-migrate/migrate/v4@v4.17.1
+go: downloading github.com/golang-migrate/migrate/v4 v4.17.1
+go: downloading github.com/hashicorp/go-multierror v1.1.1
+go: downloading go.uber.org/atomic v1.7.0
+go: downloading github.com/hashicorp/errwrap v1.1.0
+go: added github.com/golang-migrate/migrate/v4 v4.17.1
+go: added github.com/hashicorp/errwrap v1.1.0
+go: added github.com/hashicorp/go-multierror v1.1.1
+go: added go.uber.org/atomic v1.7.0
+
+d:\Projects\2026\screenshot_go_service\app>go get github.com/golang-migrate/migrate/v4/database/postgres@v4.17.1
+
+d:\Projects\2026\screenshot_go_service\app>go get github.com/golang-migrate/migrate/v4/source/file@v4.17.1
+
+d:\Projects\2026\screenshot_go_service\app>go get golang.org/x/crypto@v0.31.0
+go: downloading golang.org/x/crypto v0.31.0
+go: upgraded golang.org/x/crypto v0.20.0 => v0.31.0
+
+d:\Projects\2026\screenshot_go_service\app>type go.mod
+module screenshot-api
+
+go 1.22.5
+
+require (
+        github.com/golang-migrate/migrate/v4 v4.17.1 // indirect
+        github.com/hashicorp/errwrap v1.1.0 // indirect
+        github.com/hashicorp/go-multierror v1.1.1 // indirect
+        github.com/lib/pq v1.11.2 // indirect
+        go.uber.org/atomic v1.7.0 // indirect
+        golang.org/x/crypto v0.31.0 // indirect
+)
+
+d:\Projects\2026\screenshot_go_service\app>cd ..
+
+d:\Projects\2026\screenshot_go_service>docker compose down
+[+] Running 3/3
+ ✔ Container screenshot_go_service-api-1          Removed                                                                                                                                                                               0.5s
+ ✔ Container screenshot_go_service-browserless-1  Removed                                                                                                                                                                               0.5s
+ ✔ Network screenshot_go_service_default          Removed                                                                                                                                                                               0.3s
+
+d:\Projects\2026\screenshot_go_service>docker compose up -d --build
+[+] Building 37.0s (17/17) FINISHED                                                                                                                                                                                     docker:desktop-linux
+ => [api internal] load build definition from Dockerfile                                                                                                                                                                                0.1s
+ => => transferring dockerfile: 274B                                                                                                                                                                                                    0.0s
+ => [api internal] load metadata for docker.io/library/golang:1.23-alpine                                                                                                                                                               1.8s
+ => [api internal] load metadata for docker.io/library/alpine:latest                                                                                                                                                                    1.8s
+ => [api auth] library/golang:pull token for registry-1.docker.io                                                                                                                                                                       0.0s
+ => [api auth] library/alpine:pull token for registry-1.docker.io                                                                                                                                                                       0.0s
+ => [api internal] load .dockerignore                                                                                                                                                                                                   0.0s
+ => => transferring context: 2B                                                                                                                                                                                                         0.0s
+ => [api builder 1/6] FROM docker.io/library/golang:1.23-alpine@sha256:383395b794dffa5b53012a212365d40c8e37109a626ca30d6151c8348d380b5f                                                                                                 0.0s
+ => [api internal] load build context                                                                                                                                                                                                   0.1s
+ => => transferring context: 12.96kB                                                                                                                                                                                                    0.1s
+ => [api stage-1 1/3] FROM docker.io/library/alpine:latest@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659                                                                                                      0.0s
+ => CACHED [api builder 2/6] WORKDIR /app                                                                                                                                                                                               0.0s
+ => [api builder 3/6] COPY go.mod ./                                                                                                                                                                                                    0.1s
+ => [api builder 4/6] RUN go mod download                                                                                                                                                                                               2.2s
+ => [api builder 5/6] COPY . .                                                                                                                                                                                                          0.1s
+ => [api builder 6/6] RUN go build -o server .                                                                                                                                                                                         31.8s
+ => CACHED [api stage-1 2/3] WORKDIR /app                                                                                                                                                                                               0.0s
+ => [api stage-1 3/3] COPY --from=builder /app/server .                                                                                                                                                                                 0.2s
+ => [api] exporting to image                                                                                                                                                                                                            0.2s
+ => => exporting layers                                                                                                                                                                                                                 0.2s
+ => => writing image sha256:ceec3c2c2ef728bc797977941e75b70b43d0d7d86fdac83c60d0cd9ef5d4a038                                                                                                                                            0.0s
+ => => naming to docker.io/library/screenshot_go_service-api                                                                                                                                                                            0.0s
+[+] Running 5/5
+ ✔ Network screenshot_go_service_default          Created                                                                                                                                                                               0.1s
+ ✔ Volume "screenshot_go_service_pgdata"          Created                                                                                                                                                                               0.0s
+ ✔ Container screenshot_go_service-browserless-1  Started                                                                                                                                                                               1.5s
+ ✔ Container screenshot_go_service-postgres-1     Started                                                                                                                                                                               1.6s
+ ✔ Container screenshot_go_service-api-1          Started                                                                                                                                                                               2.3s
+
+d:\Projects\2026\screenshot_go_service>docker compose logs api
+api-1  | 2026/02/22 08:16:24 failed to connect to database: dial tcp 172.20.0.3:5432: connect: connection refused
+
+d:\Projects\2026\screenshot_go_service>
+d:\Projects\2026\screenshot_go_service>docker compose up -d --build
+[+] Building 1.0s (15/15) FINISHED                                                                                                                                                                                      docker:desktop-linux
+ => [api internal] load build definition from Dockerfile                                                                                                                                                                                0.0s
+ => => transferring dockerfile: 274B                                                                                                                                                                                                    0.0s
+ => [api internal] load metadata for docker.io/library/alpine:latest                                                                                                                                                                    0.7s
+ => [api internal] load metadata for docker.io/library/golang:1.23-alpine                                                                                                                                                               0.7s
+ => [api internal] load .dockerignore                                                                                                                                                                                                   0.0s
+ => => transferring context: 2B                                                                                                                                                                                                         0.0s
+ => [api builder 1/6] FROM docker.io/library/golang:1.23-alpine@sha256:383395b794dffa5b53012a212365d40c8e37109a626ca30d6151c8348d380b5f                                                                                                 0.0s
+ => [api internal] load build context                                                                                                                                                                                                   0.0s
+ => => transferring context: 634B                                                                                                                                                                                                       0.0s
+ => [api stage-1 1/3] FROM docker.io/library/alpine:latest@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659                                                                                                      0.0s
+ => CACHED [api stage-1 2/3] WORKDIR /app                                                                                                                                                                                               0.0s
+ => CACHED [api builder 2/6] WORKDIR /app                                                                                                                                                                                               0.0s
+ => CACHED [api builder 3/6] COPY go.mod ./                                                                                                                                                                                             0.0s
+ => CACHED [api builder 4/6] RUN go mod download                                                                                                                                                                                        0.0s
+ => CACHED [api builder 5/6] COPY . .                                                                                                                                                                                                   0.0s
+ => CACHED [api builder 6/6] RUN go build -o server .                                                                                                                                                                                   0.0s
+ => CACHED [api stage-1 3/3] COPY --from=builder /app/server .                                                                                                                                                                          0.0s
+ => [api] exporting to image                                                                                                                                                                                                            0.0s
+ => => exporting layers                                                                                                                                                                                                                 0.0s
+ => => writing image sha256:ceec3c2c2ef728bc797977941e75b70b43d0d7d86fdac83c60d0cd9ef5d4a038                                                                                                                                            0.0s
+ => => naming to docker.io/library/screenshot_go_service-api                                                                                                                                                                            0.0s
+[+] Running 3/3
+ ✔ Container screenshot_go_service-postgres-1     Healthy                                                                                                                                                                               6.9s
+ ✔ Container screenshot_go_service-browserless-1  Running                                                                                                                                                                               0.0s
+ ✔ Container screenshot_go_service-api-1          Started                                                                                                                                                                               6.8s
+
+d:\Projects\2026\screenshot_go_service>docker compose logs api
+api-1  | 2026/02/22 08:19:32 connected to database
+api-1  | 2026/02/22 08:19:32 failed to run migrations: open .: no such file or directory
+
+d:\Projects\2026\screenshot_go_service>docker compose up -d --build
+[+] Building 28.7s (18/18) FINISHED                                                                                                                                                                                     docker:desktop-linux
+ => [api internal] load build definition from Dockerfile                                                                                                                                                                                0.0s
+ => => transferring dockerfile: 324B                                                                                                                                                                                                    0.0s
+ => [api internal] load metadata for docker.io/library/alpine:latest                                                                                                                                                                    1.0s
+ => [api internal] load metadata for docker.io/library/golang:1.23-alpine                                                                                                                                                               1.0s
+ => [api auth] library/alpine:pull token for registry-1.docker.io                                                                                                                                                                       0.0s
+ => [api auth] library/golang:pull token for registry-1.docker.io                                                                                                                                                                       0.0s
+ => [api internal] load .dockerignore                                                                                                                                                                                                   0.0s
+ => => transferring context: 2B                                                                                                                                                                                                         0.0s
+ => [api builder 1/6] FROM docker.io/library/golang:1.23-alpine@sha256:383395b794dffa5b53012a212365d40c8e37109a626ca30d6151c8348d380b5f                                                                                                 0.0s
+ => [api internal] load build context                                                                                                                                                                                                   0.0s
+ => => transferring context: 926B                                                                                                                                                                                                       0.0s
+ => [api stage-1 1/4] FROM docker.io/library/alpine:latest@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659                                                                                                      0.0s
+ => CACHED [api builder 2/6] WORKDIR /app                                                                                                                                                                                               0.0s
+ => CACHED [api builder 3/6] COPY go.mod ./                                                                                                                                                                                             0.0s
+ => CACHED [api builder 4/6] RUN go mod download                                                                                                                                                                                        0.0s
+ => [api builder 5/6] COPY . .                                                                                                                                                                                                          0.1s
+ => [api builder 6/6] RUN go build -o server .                                                                                                                                                                                         26.9s
+ => CACHED [api stage-1 2/4] WORKDIR /app                                                                                                                                                                                               0.0s
+ => CACHED [api stage-1 3/4] COPY --from=builder /app/server .                                                                                                                                                                          0.0s
+ => [api stage-1 4/4] COPY --from=builder /app/migrations ./migrations                                                                                                                                                                  0.1s
+ => [api] exporting to image                                                                                                                                                                                                            0.1s
+ => => exporting layers                                                                                                                                                                                                                 0.1s
+ => => writing image sha256:bec16fd3325776f35492eee8cf681a847fdb8375f26ddffea917f699dd84de60                                                                                                                                            0.0s
+ => => naming to docker.io/library/screenshot_go_service-api                                                                                                                                                                            0.0s
+[+] Running 3/3
+ ✔ Container screenshot_go_service-browserless-1  Running                                                                                                                                                                               0.0s
+ ✔ Container screenshot_go_service-postgres-1     Healthy                                                                                                                                                                               0.7s
+ ✔ Container screenshot_go_service-api-1          Started                                                                                                                                                                               1.2s
+
+d:\Projects\2026\screenshot_go_service>docker compose logs api
+api-1  | 2026/02/22 08:21:41 connected to database
+api-1  | 2026/02/22 08:21:41 migrations applied
+api-1  | 2026/02/22 08:21:41 server started on :8082
+
+d:\Projects\2026\screenshot_go_service>curl -X POST "http://localhost:8082/auth/register" \
+{"error":"invalid request body"}
+curl: (3) URL rejected: Bad hostname
+
+d:\Projects\2026\screenshot_go_service>  -H "Content-Type: application/json" \
+'-H' is not recognized as an internal or external command,
+operable program or batch file.
+
+d:\Projects\2026\screenshot_go_service>  -d "{\"email\":\"test@example.com\",\"password\":\"secret123\"}"
+'-d' is not recognized as an internal or external command,
+operable program or batch file.
+
+d:\Projects\2026\screenshot_go_service>curl -X POST "http://localhost:8082/auth/register" -H "Content-Type: application/json" -d "{\"email\":\"test@example.com\",\"password\":\"secret123\"}"
+{"error":"internal error"}
+
+d:\Projects\2026\screenshot_go_service>docker compose logs api
+api-1  | 2026/02/22 08:21:41 connected to database
+api-1  | 2026/02/22 08:21:41 migrations applied
+api-1  | 2026/02/22 08:21:41 server started on :8082
+
+d:\Projects\2026\screenshot_go_service>docker compose up -d --build
+[+] Building 28.6s (18/18) FINISHED                                                                                                                                                                                     docker:desktop-linux
+ => [api internal] load build definition from Dockerfile                                                                                                                                                                                0.1s
+ => => transferring dockerfile: 324B                                                                                                                                                                                                    0.0s
+ => [api internal] load metadata for docker.io/library/alpine:latest                                                                                                                                                                    1.2s
+ => [api internal] load metadata for docker.io/library/golang:1.23-alpine                                                                                                                                                               1.0s
+ => [api auth] library/alpine:pull token for registry-1.docker.io                                                                                                                                                                       0.0s
+ => [api auth] library/golang:pull token for registry-1.docker.io                                                                                                                                                                       0.0s
+ => [api internal] load .dockerignore                                                                                                                                                                                                   0.0s
+ => => transferring context: 2B                                                                                                                                                                                                         0.0s
+ => [api builder 1/6] FROM docker.io/library/golang:1.23-alpine@sha256:383395b794dffa5b53012a212365d40c8e37109a626ca30d6151c8348d380b5f                                                                                                 0.0s
+ => [api internal] load build context                                                                                                                                                                                                   0.0s
+ => => transferring context: 3.35kB                                                                                                                                                                                                     0.0s
+ => [api stage-1 1/4] FROM docker.io/library/alpine:latest@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659                                                                                                      0.0s
+ => CACHED [api builder 2/6] WORKDIR /app                                                                                                                                                                                               0.0s
+ => CACHED [api builder 3/6] COPY go.mod ./                                                                                                                                                                                             0.0s
+ => CACHED [api builder 4/6] RUN go mod download                                                                                                                                                                                        0.0s
+ => [api builder 5/6] COPY . .                                                                                                                                                                                                          0.1s
+ => [api builder 6/6] RUN go build -o server .                                                                                                                                                                                         26.2s
+ => CACHED [api stage-1 2/4] WORKDIR /app                                                                                                                                                                                               0.0s
+ => [api stage-1 3/4] COPY --from=builder /app/server .                                                                                                                                                                                 0.1s
+ => [api stage-1 4/4] COPY --from=builder /app/migrations ./migrations                                                                                                                                                                  0.1s
+ => [api] exporting to image                                                                                                                                                                                                            0.3s
+ => => exporting layers                                                                                                                                                                                                                 0.3s
+ => => writing image sha256:764903b643de4fbac60da42c7c6bca11c9942799705ad129bf0e74fa56582c11                                                                                                                                            0.0s
+ => => naming to docker.io/library/screenshot_go_service-api                                                                                                                                                                            0.0s
+[+] Running 3/3
+ ✔ Container screenshot_go_service-browserless-1  Running                                                                                                                                                                               0.0s
+ ✔ Container screenshot_go_service-postgres-1     Healthy                                                                                                                                                                               1.3s
+ ✔ Container screenshot_go_service-api-1          Started                                                                                                                                                                               1.9s
+
+d:\Projects\2026\screenshot_go_service>user, err := h.storage.CreateUser(req.Email, string(hash))
+
+d:\Projects\2026\screenshot_go_service>if err != nil {
+!= was unexpected at this time.
+
+d:\Projects\2026\screenshot_go_service>    log.Printf("CreateUser error: %v", err)
+'log.Printf' is not recognized as an internal or external command,
+operable program or batch file.
+
+d:\Projects\2026\screenshot_go_service>    jsonError(w, "internal error", http.StatusInternalServerError)
+'jsonError' is not recognized as an internal or external command,
+operable program or batch file.
+
+d:\Projects\2026\screenshot_go_service>    return
+'return' is not recognized as an internal or external command,
+operable program or batch file.
+
+d:\Projects\2026\screenshot_go_service>docker compose logs api
+api-1  | 2026/02/22 08:27:09 connected to database
+api-1  | 2026/02/22 08:27:09 migrations applied
+api-1  | 2026/02/22 08:27:09 server started on :8082
+
+d:\Projects\2026\screenshot_go_service>docker ps
+CONTAINER ID   IMAGE                          COMMAND                  CREATED       STATUS                 PORTS                                                                                                         NAMES
+ed4886ddfba2   screenshot_go_service-api      "./server"               2 hours ago   Up 2 hours             0.0.0.0:8082->8082/tcp                                                                                        screenshot_go_service-api-1
+35bb97ae6bb8   postgres:16-alpine             "docker-entrypoint.s…"   3 hours ago   Up 3 hours (healthy)   0.0.0.0:5433->5432/tcp                                                                                        screenshot_go_service-postgres-1
+cc3dcee9c0b4   ghcr.io/browserless/chromium   "./scripts/start.sh"     3 hours ago   Up 3 hours             0.0.0.0:3002->3000/tcp                                                                                        screenshot_go_service-browserless-1
+377a29bccf99   vue-notus-main-frontend        "docker-entrypoint.s…"   5 hours ago   Up 5 hours             8081/tcp, 0.0.0.0:8081->8080/tcp                                                                              vuejs-notus
+64470f7a2faf   anticaptchaio-frontend         "docker-entrypoint.s…"   5 hours ago   Up 5 hours             0.0.0.0:8080->8080/tcp                                                                                        vue-frontend
+33816bad8fe6   anticaptchaio-backend          "/microservice"          5 hours ago   Up 5 hours             0.0.0.0:7070->7070/tcp                                                                                        go-backend
+3de38c6d54b9   postgres:16-alpine             "docker-entrypoint.s…"   5 hours ago   Up 5 hours             0.0.0.0:5432->5432/tcp                                                                                        postgres
+3d5379a6aaad   redis:7.2-alpine               "docker-entrypoint.s…"   5 hours ago   Up 5 hours             0.0.0.0:6379->6379/tcp                                                                                        redis
+19a3f626b8c7   rabbitmq:3-management-alpine   "docker-entrypoint.s…"   5 hours ago   Up 5 hours             4369/tcp, 5671/tcp, 0.0.0.0:5672->5672/tcp, 15671/tcp, 15691-15692/tcp, 25672/tcp, 0.0.0.0:15672->15672/tcp   rabbitmq
+
+d:\Projects\2026\screenshot_go_service>curl -X POST "http://localhost:8082/auth/register" -H "Content-Type: application/json" -d "{\"email\":\"test@example.com\",\"password\":\"secret123\"}"
+{"error":"internal error"}
+
+d:\Projects\2026\screenshot_go_service>docker compose logs api
+api-1  | 2026/02/22 08:27:09 connected to database
+api-1  | 2026/02/22 08:27:09 migrations applied
+api-1  | 2026/02/22 08:27:09 server started on :8082
+api-1  | 2026/02/22 10:50:43 CreateUser error: pq: duplicate key value violates unique constraint "users_email_key" (23505)
+
+d:\Projects\2026\screenshot_go_service>curl -X POST "http://localhost:8082/auth/register" -H "Content-Type: application/json" -d "{\"email\":\"test2@example.com\",\"password\":\"secret123\"}"
+{"error":"internal error"}
+
+d:\Projects\2026\screenshot_go_service>docker compose logs api
+api-1  | 2026/02/22 08:27:09 connected to database
+api-1  | 2026/02/22 08:27:09 migrations applied
+api-1  | 2026/02/22 08:27:09 server started on :8082
+api-1  | 2026/02/22 10:50:43 CreateUser error: pq: duplicate key value violates unique constraint "users_email_key" (23505)
+
+[+] Building 2.1s (18/18) FINISHED                                                                                                                                                                                      docker:desktop-linux
+ => [api internal] load build definition from Dockerfile                                                                                                                                                                                0.0s
+ => => transferring dockerfile: 324B                                                                                                                                                                                                    0.0s
+ => [api internal] load metadata for docker.io/library/alpine:latest                                                                                                                                                                    1.6s
+ => [api internal] load metadata for docker.io/library/golang:1.23-alpine                                                                                                                                                               1.8s
+ => [api auth] library/alpine:pull token for registry-1.docker.io                                                                                                                                                                       0.0s
+ => [api auth] library/golang:pull token for registry-1.docker.io                                                                                                                                                                       0.0s
+ => [api internal] load .dockerignore                                                                                                                                                                                                   0.0s
+ => => transferring context: 2B                                                                                                                                                                                                         0.0s
+ => [api builder 1/6] FROM docker.io/library/golang:1.23-alpine@sha256:383395b794dffa5b53012a212365d40c8e37109a626ca30d6151c8348d380b5f                                                                                                 0.0s
+ => [api internal] load build context                                                                                                                                                                                                   0.0s
+ => => transferring context: 634B                                                                                                                                                                                                       0.0s
+ => [api stage-1 1/4] FROM docker.io/library/alpine:latest@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659                                                                                                      0.0s
+ => CACHED [api stage-1 2/4] WORKDIR /app                                                                                                                                                                                               0.0s
+ => CACHED [api builder 2/6] WORKDIR /app                                                                                                                                                                                               0.0s
+ => CACHED [api builder 3/6] COPY go.mod ./                                                                                                                                                                                             0.0s
+ => CACHED [api builder 4/6] RUN go mod download                                                                                                                                                                                        0.0s
+ => CACHED [api builder 5/6] COPY . .                                                                                                                                                                                                   0.0s
+ => CACHED [api builder 6/6] RUN go build -o server .                                                                                                                                                                                   0.0s
+ => CACHED [api stage-1 3/4] COPY --from=builder /app/server .                                                                                                                                                                          0.0s
+ => CACHED [api stage-1 4/4] COPY --from=builder /app/migrations ./migrations                                                                                                                                                           0.0s
+ => [api] exporting to image                                                                                                                                                                                                            0.0s
+ => => exporting layers                                                                                                                                                                                                                 0.0s
+ => => writing image sha256:764903b643de4fbac60da42c7c6bca11c9942799705ad129bf0e74fa56582c11                                                                                                                                            0.0s
+ => => naming to docker.io/library/screenshot_go_service-api                                                                                                                                                                            0.0s
+[+] Running 3/3
+ ✔ Container screenshot_go_service-browserless-1  Running                                                                                                                                                                               0.0s
+ ✔ Container screenshot_go_service-postgres-1     Healthy                                                                                                                                                                               0.5s
+ ✔ Container screenshot_go_service-api-1          Running                                                                                                                                                                               0.0s
+
+d:\Projects\2026\screenshot_go_service>curl -X POST "http://localhost:8082/auth/register" -H "Content-Type: application/json" -d "{\"email\":\"test22222@example.com\",\"password\":\"secret123\"}"
+{"error":"internal error"}
+
+d:\Projects\2026\screenshot_go_service>docker compose logs api
+api-1  | 2026/02/22 08:27:09 connected to database
+api-1  | 2026/02/22 08:27:09 migrations applied
+api-1  | 2026/02/22 08:27:09 server started on :8082
+api-1  | 2026/02/22 10:50:43 CreateUser error: pq: duplicate key value violates unique constraint "users_email_key" (23505)
+
+d:\Projects\2026\screenshot_go_service>docker compose down
+[+] Running 4/4
+ ✔ Container screenshot_go_service-api-1          Removed                                                                                                                                                                               0.4s
+ ✔ Container screenshot_go_service-browserless-1  Removed                                                                                                                                                                               0.7s
+ ✔ Container screenshot_go_service-postgres-1     Removed                                                                                                                                                                               0.9s
+ ✔ Network screenshot_go_service_default          Removed                                                                                                                                                                               0.3s
+
+d:\Projects\2026\screenshot_go_service>docker compose up -d --build
+[+] Building 0.9s (16/16) FINISHED                                                                                                                                                                                      docker:desktop-linux
+ => [api internal] load build definition from Dockerfile                                                                                                                                                                                0.0s
+ => => transferring dockerfile: 324B                                                                                                                                                                                                    0.0s
+ => [api internal] load metadata for docker.io/library/alpine:latest                                                                                                                                                                    0.6s
+ => [api internal] load metadata for docker.io/library/golang:1.23-alpine                                                                                                                                                               0.6s
+ => [api internal] load .dockerignore                                                                                                                                                                                                   0.0s
+ => => transferring context: 2B                                                                                                                                                                                                         0.0s
+ => [api builder 1/6] FROM docker.io/library/golang:1.23-alpine@sha256:383395b794dffa5b53012a212365d40c8e37109a626ca30d6151c8348d380b5f                                                                                                 0.0s
+ => [api stage-1 1/4] FROM docker.io/library/alpine:latest@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659                                                                                                      0.0s
+ => [api internal] load build context                                                                                                                                                                                                   0.0s
+ => => transferring context: 634B                                                                                                                                                                                                       0.0s
+ => CACHED [api stage-1 2/4] WORKDIR /app                                                                                                                                                                                               0.0s
+ => CACHED [api builder 2/6] WORKDIR /app                                                                                                                                                                                               0.0s
+ => CACHED [api builder 3/6] COPY go.mod ./                                                                                                                                                                                             0.0s
+ => CACHED [api builder 4/6] RUN go mod download                                                                                                                                                                                        0.0s
+ => CACHED [api builder 5/6] COPY . .                                                                                                                                                                                                   0.0s
+ => CACHED [api builder 6/6] RUN go build -o server .                                                                                                                                                                                   0.0s
+ => CACHED [api stage-1 3/4] COPY --from=builder /app/server .                                                                                                                                                                          0.0s
+ => CACHED [api stage-1 4/4] COPY --from=builder /app/migrations ./migrations                                                                                                                                                           0.0s
+ => [api] exporting to image                                                                                                                                                                                                            0.0s
+ => => exporting layers                                                                                                                                                                                                                 0.0s
+ => => writing image sha256:764903b643de4fbac60da42c7c6bca11c9942799705ad129bf0e74fa56582c11                                                                                                                                            0.0s
+ => => naming to docker.io/library/screenshot_go_service-api                                                                                                                                                                            0.0s
+[+] Running 4/4
+ ✔ Network screenshot_go_service_default          Created                                                                                                                                                                               0.1s
+ ✔ Container screenshot_go_service-browserless-1  Started                                                                                                                                                                               0.8s
+ ✔ Container screenshot_go_service-postgres-1     Healthy                                                                                                                                                                               6.4s
+ ✔ Container screenshot_go_service-api-1          Started                                                                                                                                                                               6.8s
+
+d:\Projects\2026\screenshot_go_service>curl -X POST "http://localhost:8082/auth/register" -H "Content-Type: application/json" -d "{\"email\":\"test22222@example.com\",\"password\":\"secret123\"}"
+{"error":"internal error"}
+
+d:\Projects\2026\screenshot_go_service>curl -X POST "http://localhost:8082/auth/login" -H "Content-Type: application/json" -d "{\"email\":\"test@example.com\",\"password\":\"secret123\"}"
+{"error":"internal error"}
+
+d:\Projects\2026\screenshot_go_service>docker exec -it screenshot_go_service-postgres-1 psql -U admin -d mydata
+psql (16.12)
+Type "help" for help.
+
+mydata=# SELECT * FROM users;
+ id |         email         |                           password                           |         created_at
+----+-----------------------+--------------------------------------------------------------+----------------------------
+  1 | test@example.com      | $2a$10$uYqgp11Y5XejGKNClee6DeLclLtH5WPneIarFBEFF1f5NO3DTjzZC | 2026-02-22 08:24:01.182597
+  3 | test2@example.com     | $2a$10$NannWXsHweJEfu7zP4JWNuW4rbdgGVcQN.2XQChAo2qaxb1962DJa | 2026-02-22 11:14:54.076136
+  4 | test22222@example.com | $2a$10$9JeYdXnaoudLo7bW2F2BP.GZ9fLhu0iORZjo.nTbEctPsoI1yqnsu | 2026-02-22 11:15:37.215469
+(3 rows)
+
+mydata=# select * FROM api_keys;
+ERROR:  relation "api_keys" does not exist
+LINE 1: select * FROM api_keys;
+                      ^
+mydata=# exit
+
+What's next:
+    Try Docker Debug for seamless, persistent debugging tools in any container or image → docker debug screenshot_go_service-postgres-1
+    Learn more at https://docs.docker.com/go/debug-cli/
+
+d:\Projects\2026\screenshot_go_service>docker exec -it screenshot_go_service-postgres-1 psql -U admin -d mydata
+psql (16.12)
+Type "help" for help.
+
+mydata=# exit
+
+What's next:
+    Try Docker Debug for seamless, persistent debugging tools in any container or image → docker debug screenshot_go_service-postgres-1
+    Learn more at https://docs.docker.com/go/debug-cli/
+
+d:\Projects\2026\screenshot_go_service>docker exec -it screenshot_go_service-postgres-1 psql -U admin -d mydata -c "SELECT * FROM schema_migrations;"
+ version | dirty
+---------+-------
+       2 | f
+(1 row)
+
+
+What's next:
+    Try Docker Debug for seamless, persistent debugging tools in any container or image → docker debug screenshot_go_service-postgres-1
+    Learn more at https://docs.docker.com/go/debug-cli/
+
+d:\Projects\2026\screenshot_go_service>type app\migrations\000002_create_api_keys.up.sql
+The system cannot find the file specified.
+
+d:\Projects\2026\screenshot_go_service>docker exec -it screenshot_go_service-postgres-1 psql -U admin -d mydata -c "SELECT * FROM schema_migrations;"
+ version | dirty
+---------+-------
+       2 | f
+(1 row)
+
+
+What's next:
+    Try Docker Debug for seamless, persistent debugging tools in any container or image → docker debug screenshot_go_service-postgres-1
+    Learn more at https://docs.docker.com/go/debug-cli/
+
+d:\Projects\2026\screenshot_go_service>docker compose down
+[+] Running 4/4
+ ✔ Container screenshot_go_service-api-1          Removed                                                                                                                                                                               0.4s
+ ✔ Container screenshot_go_service-postgres-1     Removed                                                                                                                                                                               0.8s
+ ✔ Container screenshot_go_service-browserless-1  Removed                                                                                                                                                                               0.7s
+ ✔ Network screenshot_go_service_default          Removed                                                                                                                                                                               0.3s
+
+d:\Projects\2026\screenshot_go_service>docker compose up -d --build
+[+] Building 25.8s (18/18) FINISHED                                                                                                                                                                                     docker:desktop-linux
+ => [api internal] load build definition from Dockerfile                                                                                                                                                                                0.0s
+ => => transferring dockerfile: 324B                                                                                                                                                                                                    0.0s
+ => [api internal] load metadata for docker.io/library/alpine:latest                                                                                                                                                                    0.9s
+ => [api internal] load metadata for docker.io/library/golang:1.23-alpine                                                                                                                                                               0.9s
+ => [api auth] library/alpine:pull token for registry-1.docker.io                                                                                                                                                                       0.0s
+ => [api auth] library/golang:pull token for registry-1.docker.io                                                                                                                                                                       0.0s
+ => [api internal] load .dockerignore                                                                                                                                                                                                   0.0s
+ => => transferring context: 2B                                                                                                                                                                                                         0.0s
+ => [api builder 1/6] FROM docker.io/library/golang:1.23-alpine@sha256:383395b794dffa5b53012a212365d40c8e37109a626ca30d6151c8348d380b5f                                                                                                 0.0s
+ => [api stage-1 1/4] FROM docker.io/library/alpine:latest@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659                                                                                                      0.0s
+ => [api internal] load build context                                                                                                                                                                                                   0.0s
+ => => transferring context: 1.13kB                                                                                                                                                                                                     0.0s
+ => CACHED [api builder 2/6] WORKDIR /app                                                                                                                                                                                               0.0s
+ => CACHED [api builder 3/6] COPY go.mod ./                                                                                                                                                                                             0.0s
+ => CACHED [api builder 4/6] RUN go mod download                                                                                                                                                                                        0.0s
+ => [api builder 5/6] COPY . .                                                                                                                                                                                                          0.1s
+ => [api builder 6/6] RUN go build -o server .                                                                                                                                                                                         24.2s
+ => CACHED [api stage-1 2/4] WORKDIR /app                                                                                                                                                                                               0.0s
+ => CACHED [api stage-1 3/4] COPY --from=builder /app/server .                                                                                                                                                                          0.0s
+ => [api stage-1 4/4] COPY --from=builder /app/migrations ./migrations                                                                                                                                                                  0.1s
+ => [api] exporting to image                                                                                                                                                                                                            0.1s
+ => => exporting layers                                                                                                                                                                                                                 0.1s
+ => => writing image sha256:7af6959f34b9680ce193d5fb8577762349e723b1ad72ac205c36bd7d9d7359a8                                                                                                                                            0.0s
+ => => naming to docker.io/library/screenshot_go_service-api                                                                                                                                                                            0.0s
+[+] Running 4/4
+ ✔ Network screenshot_go_service_default          Created                                                                                                                                                                               0.1s
+ ✔ Container screenshot_go_service-browserless-1  Started                                                                                                                                                                               1.0s
+ ✔ Container screenshot_go_service-postgres-1     Healthy                                                                                                                                                                               6.0s
+ ✔ Container screenshot_go_service-api-1          Started                                                                                                                                                                               6.5s
+
+d:\Projects\2026\screenshot_go_service>docker compose logs api
+api-1  | 2026/02/22 11:23:45 connected to database
+api-1  | 2026/02/22 11:23:45 migrations applied
+api-1  | 2026/02/22 11:23:45 server started on :8082
+
+d:\Projects\2026\screenshot_go_service>curl -X POST "http://localhost:8082/auth/login" -H "Content-Type: application/json" -d "{\"email\":\"test@example.com\",\"password\":\"secret123\"}"
+{"error":"internal error"}
+
+d:\Projects\2026\screenshot_go_service>curl -X POST "http://localhost:8082/auth/register" -H "Content-Type: application/json" -d "{\"email\":\"test22222@example.com\",\"password\":\"secret123\"}"
+{"error":"internal error"}
+
+d:\Projects\2026\screenshot_go_service>docker exec -it screenshot_go_service-postgres-1 psql -U admin -d mydata -c "SELECT * FROM schema_migrations;"
+ version | dirty
+---------+-------
+       2 | f
+(1 row)
+
+
+What's next:
+    Try Docker Debug for seamless, persistent debugging tools in any container or image → docker debug screenshot_go_service-postgres-1
+    Learn more at https://docs.docker.com/go/debug-cli/
+
+d:\Projects\2026\screenshot_go_service>docker compose logs api
+api-1  | 2026/02/22 11:23:45 connected to database
+api-1  | 2026/02/22 11:23:45 migrations applied
+api-1  | 2026/02/22 11:23:45 server started on :8082
+api-1  | 2026/02/22 11:24:35 CreateUser error: pq: duplicate key value violates unique constraint "users_email_key" (23505)
+
+d:\Projects\2026\screenshot_go_service>docker exec -it screenshot_go_service-postgres-1 psql -U admin -d mydata -c "DELETE FROM schema_migrations WHERE version = 2;"
+docker compose restart api
+docker compose logs apiDELETE 1
+
+What's next:
+    Try Docker Debug for seamless, persistent debugging tools in any container or image → docker debug screenshot_go_service-postgres-1
+    Learn more at https://docs.docker.com/go/debug-cli/
+
+d:\Projects\2026\screenshot_go_service>docker exec -it screenshot_go_service-postgres-1 psql -U admin -d mydata -c "DELETE FROM schema_migrations WHERE version = 2;"
+DELETE 0
+
+What's next:
+    Try Docker Debug for seamless, persistent debugging tools in any container or image → docker debug screenshot_go_service-postgres-1
+    Learn more at https://docs.docker.com/go/debug-cli/
+
+d:\Projects\2026\screenshot_go_service>docker compose restart api
+[+] Restarting 1/1
+ ✔ Container screenshot_go_service-api-1  Started                                                                                                                                                                                       0.8s
+
+d:\Projects\2026\screenshot_go_service>docker compose logs api
+api-1  | 2026/02/22 11:23:45 connected to database
+api-1  | 2026/02/22 11:23:45 migrations applied
+api-1  | 2026/02/22 11:23:45 server started on :8082
+api-1  | 2026/02/22 11:24:35 CreateUser error: pq: duplicate key value violates unique constraint "users_email_key" (23505)
+api-1  | 2026/02/22 11:26:38 connected to database
+api-1  | 2026/02/22 11:26:38 failed to run migrations: migration failed: relation "users" already exists in line 0: CREATE TABLE users (
+api-1  |                        id         SERIAL PRIMARY KEY,
+api-1  |                        email      VARCHAR(255) UNIQUE NOT NULL,
+api-1  |                        password   VARCHAR(255) NOT NULL,
+api-1  |                        created_at TIMESTAMP DEFAULT NOW()
+api-1  | ); (details: pq: relation "users" already exists (42P07))
+
+d:\Projects\2026\screenshot_go_service>docker exec -it screenshot_go_service-postgres-1 psql -U admin -d mydata -c "INSERT INTO schema_migrations (version, dirty) VALUES (1, false);"
+ERROR:  duplicate key value violates unique constraint "schema_migrations_pkey"
+DETAIL:  Key (version)=(1) already exists.
+
+What's next:
+    Try Docker Debug for seamless, persistent debugging tools in any container or image → docker debug screenshot_go_service-postgres-1
+    Learn more at https://docs.docker.com/go/debug-cli/
+
+[+] Running 4/46\screenshot_go_service>docker compose down
+ ✔ Container screenshot_go_service-api-1          Removed                                                                                                                                                                               0.0s
+ ✔ Container screenshot_go_service-postgres-1     Removed                                                                                                                                                                               0.7s
+ ✔ Container screenshot_go_service-browserless-1  Removed                                                                                                                                                                               0.6s
+ ✔ Network screenshot_go_service_default          Removed                                                                                                                                                                               0.3s
+
+d:\Projects\2026\screenshot_go_service>docker compose up -d --build
+[+] Building 1.2s (18/18) FINISHED                                                                                                                                                                                      docker:desktop-linux
+ => [api internal] load build definition from Dockerfile                                                                                                                                                                                0.0s
+ => => transferring dockerfile: 324B                                                                                                                                                                                                    0.0s
+ => [api internal] load metadata for docker.io/library/alpine:latest                                                                                                                                                                    0.9s
+ => [api internal] load metadata for docker.io/library/golang:1.23-alpine                                                                                                                                                               0.9s
+ => [api auth] library/alpine:pull token for registry-1.docker.io                                                                                                                                                                       0.0s
+ => [api auth] library/golang:pull token for registry-1.docker.io                                                                                                                                                                       0.0s
+ => [api internal] load .dockerignore                                                                                                                                                                                                   0.0s
+ => => transferring context: 2B                                                                                                                                                                                                         0.0s
+ => [api builder 1/6] FROM docker.io/library/golang:1.23-alpine@sha256:383395b794dffa5b53012a212365d40c8e37109a626ca30d6151c8348d380b5f                                                                                                 0.0s
+ => [api stage-1 1/4] FROM docker.io/library/alpine:latest@sha256:25109184c71bdad752c8312a8623239686a9a2071e8825f20acb8f2198c3f659                                                                                                      0.0s
+ => [api internal] load build context                                                                                                                                                                                                   0.0s
+ => => transferring context: 694B                                                                                                                                                                                                       0.0s
+ => CACHED [api stage-1 2/4] WORKDIR /app                                                                                                                                                                                               0.0s
+ => CACHED [api builder 2/6] WORKDIR /app                                                                                                                                                                                               0.0s
+ => CACHED [api builder 3/6] COPY go.mod ./                                                                                                                                                                                             0.0s
+ => CACHED [api builder 4/6] RUN go mod download                                                                                                                                                                                        0.0s
+ => CACHED [api builder 5/6] COPY . .                                                                                                                                                                                                   0.0s
+ => CACHED [api builder 6/6] RUN go build -o server .                                                                                                                                                                                   0.0s
+ => CACHED [api stage-1 3/4] COPY --from=builder /app/server .                                                                                                                                                                          0.0s
+ => CACHED [api stage-1 4/4] COPY --from=builder /app/migrations ./migrations                                                                                                                                                           0.0s
+ => [api] exporting to image                                                                                                                                                                                                            0.0s
+ => => exporting layers                                                                                                                                                                                                                 0.0s
+ => => writing image sha256:7af6959f34b9680ce193d5fb8577762349e723b1ad72ac205c36bd7d9d7359a8                                                                                                                                            0.0s
+ => => naming to docker.io/library/screenshot_go_service-api                                                                                                                                                                            0.0s
+[+] Running 4/4
+ ✔ Network screenshot_go_service_default          Created                                                                                                                                                                               0.1s
+ ✔ Container screenshot_go_service-browserless-1  Started                                                                                                                                                                               0.9s
+ ✔ Container screenshot_go_service-postgres-1     Healthy                                                                                                                                                                               5.9s
+ ✔ Container screenshot_go_service-api-1          Started                                                                                                                                                                               6.1s
+
+d:\Projects\2026\screenshot_go_service>docker exec -it screenshot_go_service-postgres-1 psql -U admin -d mydata -c "\dt"
+             List of relations
+ Schema |       Name        | Type  | Owner
+--------+-------------------+-------+-------
+ public | schema_migrations | table | admin
+ public | users             | table | admin
+(2 rows)
+
+
+What's next:
+    Try Docker Debug for seamless, persistent debugging tools in any container or image → docker debug screenshot_go_service-postgres-1
+    Learn more at https://docs.docker.com/go/debug-cli/
+
+d:\Projects\2026\screenshot_go_service>docker exec -it screenshot_go_service-api-1 cat migrations/000002_create_api_keys.up.sql
+
+What's next:
+    Try Docker Debug for seamless, persistent debugging tools in any container or image → docker debug screenshot_go_service-api-1
+    Learn more at https://docs.docker.com/go/debug-cli/
+Error response from daemon: container dbf1642688911cc814e6e2fe7965d6d60db1adb360114793c46bde1740f6750a is not running
+
+d:\Projects\2026\screenshot_go_service>docker compose logs api
+api-1  | 2026/02/22 11:28:29 connected to database
+api-1  | 2026/02/22 11:28:29 failed to run migrations: Dirty database version 1. Fix and force version.
+
+d:\Projects\2026\screenshot_go_service>docker exec -it screenshot_go_service-postgres-1 psql -U admin -d mydata -c "UPDATE schema_migrations SET dirty = false WHERE version = 1;"
+UPDATE 1
+
+What's next:
+    Try Docker Debug for seamless, persistent debugging tools in any container or image → docker debug screenshot_go_service-postgres-1
+    Learn more at https://docs.docker.com/go/debug-cli/
+
+d:\Projects\2026\screenshot_go_service>docker compose logs api
+api-1  | 2026/02/22 11:28:29 connected to database
+api-1  | 2026/02/22 11:28:29 failed to run migrations: Dirty database version 1. Fix and force version.
+
+d:\Projects\2026\screenshot_go_service>docker compose restart api
+[+] Restarting 1/1
+ ✔ Container screenshot_go_service-api-1  Started                                                                                                                                                                                       0.5s
+
+d:\Projects\2026\screenshot_go_service>docker compose logs api
+api-1  | 2026/02/22 11:28:29 connected to database
+api-1  | 2026/02/22 11:28:29 failed to run migrations: Dirty database version 1. Fix and force version.
+api-1  | 2026/02/22 11:30:32 connected to database
+api-1  | 2026/02/22 11:30:32 migrations applied
+api-1  | 2026/02/22 11:30:32 server started on :8082
+
+d:\Projects\2026\screenshot_go_service>docker exec -it screenshot_go_service-postgres-1 psql -U admin -d mydata -c "\dt"
+             List of relations
+ Schema |       Name        | Type  | Owner
+--------+-------------------+-------+-------
+ public | api_keys          | table | admin
+ public | schema_migrations | table | admin
+ public | users             | table | admin
+(3 rows)
+
+
+What's next:
+    Try Docker Debug for seamless, persistent debugging tools in any container or image → docker debug screenshot_go_service-postgres-1
+    Learn more at https://docs.docker.com/go/debug-cli/
+
+d:\Projects\2026\screenshot_go_service>curl -X POST "http://localhost:8082/auth/register" -H "Content-Type: application/json" -d "{\"email\":\"newuser@example.com\",\"password\":\"secret123\"}"
+{"user":{"id":7,"email":"newuser@example.com","created_at":"2026-02-22T11:31:29.65295Z"},"api_key":{"id":1,"user_id":7,"key":"502e7d7e1b67209ba49512ab02dab62926497de204a81b2a3a5d2973bf3f6ae7","tier":"free","requests":0,"created_at":"2026-02-22T11:31:29.656724Z"}}
+
+d:\Projects\2026\screenshot_go_service>curl -X POST "http://localhost:8082/auth/login" -H "Content-Type: application/json" -d "{\"email\":\"test@example.com\",\"password\":\"secret123\"}"
+{"error":"internal error"}
+
+d:\Projects\2026\screenshot_go_service>docker compose logs api
+api-1  | 2026/02/22 11:28:29 connected to database
+api-1  | 2026/02/22 11:28:29 failed to run migrations: Dirty database version 1. Fix and force version.
+api-1  | 2026/02/22 11:30:32 connected to database
+api-1  | 2026/02/22 11:30:32 migrations applied
+api-1  | 2026/02/22 11:30:32 server started on :8082
+
+d:\Projects\2026\screenshot_go_service>docker exec -it screenshot_go_service-postgres-1 psql -U admin -d mydata -c "SELECT * FROM api_keys;"
+ id | user_id |                               key                                | tier | requests |         created_at
+----+---------+------------------------------------------------------------------+------+----------+----------------------------
+  1 |       7 | 502e7d7e1b67209ba49512ab02dab62926497de204a81b2a3a5d2973bf3f6ae7 | free |        0 | 2026-02-22 11:31:29.656724
+(1 row)
+
+
+What's next:
+    Try Docker Debug for seamless, persistent debugging tools in any container or image → docker debug screenshot_go_service-postgres-1
+    Learn more at https://docs.docker.com/go/debug-cli/
+
+d:\Projects\2026\screenshot_go_service>curl -X POST "http://localhost:8082/auth/login" -H "Content-Type: application/json" -d "{\"email\":\"newuser@example.com\",\"password\":\"secret123\"}"
+{"api_key":{"id":1,"user_id":7,"key":"502e7d7e1b67209ba49512ab02dab62926497de204a81b2a3a5d2973bf3f6ae7","tier":"free","requests":0,"created_at":"2026-02-22T11:31:29.656724Z"}}
+
+d:\Projects\2026\screenshot_go_service>curl "http://localhost:8082/screenshot?url=https://example.com" -H "X-API-Key: 502e7d7e1b67209ba49512ab02dab62926497de204a81b2a3a5d2973bf3f6ae7" --output test.png
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 17326    0 17326    0     0   8794      0 --:--:--  0:00:01 --:--:--  8794
+
+d:\Projects\2026\screenshot_go_service>
