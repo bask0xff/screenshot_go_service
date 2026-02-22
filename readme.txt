@@ -1,11 +1,19 @@
+# https://claude.ai/chat/7dc2da72-b602-4eb4-99db-c1ccf034bf27
+
 
 cd app
 go mod init screenshot-api
 
 docker compose down
 docker compose up -d
+---
 
-###############3
+docker compose down
+docker compose up -d --build
+docker compose logs api
+
+--------------------------------
+
 Example to start:
 
 d:\Projects\2026\screenshot_go_service>docker compose down
@@ -49,6 +57,8 @@ d:\Projects\2026\screenshot_go_service>curl "http://localhost:8082/screenshot?ur
 100 5167k    0 5167k    0     0   560k      0 --:--:--  0:00:09 --:--:-- 1378k
 
 d:\Projects\2026\screenshot_go_service>
+
+-------------------------------
 
 
 
