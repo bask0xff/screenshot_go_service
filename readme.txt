@@ -6,6 +6,10 @@ go mod init screenshot-api
 
 docker compose down
 docker compose up -d
+
+
+
+
 ---
 
 docker compose down
@@ -59,6 +63,63 @@ d:\Projects\2026\screenshot_go_service>curl "http://localhost:8082/screenshot?ur
 d:\Projects\2026\screenshot_go_service>
 
 -------------------------------
+
+d:\Projects\2026\screenshot_go_service>curl -X POST "http://localhost:8082/auth/login" -H "Content-Type: application/json" -d "{\"email\":\"newuser@example.com\",\"password\":\"secret123\"}"
+{"api_key":{"id":1,"user_id":7,"key":"502e7d7e1b67209ba49512ab02dab62926497de204a81b2a3a5d2973bf3f6ae7","tier":"free","requests":0,"created_at":"2026-02-22T11:31:29.656724Z"}}
+
+d:\Projects\2026\screenshot_go_service>curl "http://localhost:8082/screenshot?url=https://example.com" -H "X-API-Key: 502e7d7e1b67209ba49512ab02dab62926497de204a81b2a3a5d2973bf3f6ae7" --output test.png
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 17326    0 17326    0     0   8794      0 --:--:--  0:00:01 --:--:--  8794
+
+d:\Projects\2026\screenshot_go_service>curl "http://localhost:8082/screenshot?url=https://habr.com" -H "X-API-Key: 502e7d7e1b67209ba49512ab02dab62926497de204a81b2a3a5d2973bf3f6ae7" --output habr.png
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 5168k    0 5168k    0     0   327k      0 --:--:--  0:00:15 --:--:-- 1250k
+
+d:\Projects\2026\screenshot_go_service>curl "http://localhost:8082/screenshot?url=https://pikabu.ru" -H "X-API-Key: 502e7d7e1b67209ba49512ab02dab62926497de204a81b2a3a5d2973bf3f6ae7" --output pikabu.png
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  851k    0  851k    0     0  88841      0 --:--:--  0:00:09 --:--:--  251k
+
+d:\Projects\2026\screenshot_go_service>curl -X POST "http://localhost:8082/auth/register" -H "Content-Type: application/json" -d "{\"email\":\"newXXXuser@example.com\",\"password\":\"secret123\"}"
+{"user":{"id":8,"email":"newXXXuser@example.com","created_at":"2026-02-22T11:45:50.58443Z"},"api_key":{"id":2,"user_id":8,"key":"976a3af5ac83efdadb7d708b86639321970afb4bdc07867bbd4fbb95064ba4cf","tier":"free","requests":0,"created_at":"2026-02-22T11:45:50.586835Z"}}
+
+d:\Projects\2026\screenshot_go_service>curl "http://localhost:8082/screenshot?url=https://d3.ru" -H "X-API-Key: 976a3af5ac83efdadb7d708b86639321970afb4bdc07867bbd4fbb95064ba4cf" --output d3.png
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 2218k    0 2218k    0     0   380k      0 --:--:--  0:00:05 --:--:--  628k
+
+d:\Projects\2026\screenshot_go_service>curl "http://localhost:8082/screenshot?url=https://d3.ru" -H "X-API-Key: 976a3af5ac83efdadb7d708b86639321970afb4bdc07867bbd4fbb95064ba4cf" --output d3-2.png
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 1426k    0 1426k    0     0   264k      0 --:--:--  0:00:05 --:--:--  345k
+
+d:\Projects\2026\screenshot_go_service>curl "http://localhost:8082/screenshot?url=https://d3.ru" -H "X-API-Key: 976a3af5ac83efdadb7d708b86639321970afb4bdc07867bbd4fbb95064ba4cf" --output d3-3.png
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 6887k    0 6887k    0     0   742k      0 --:--:--  0:00:09 --:--:-- 1785k
+
+d:\Projects\2026\screenshot_go_service>curl "http://localhost:8082/screenshot?url=https://d3.ru" -H "X-API-Key: 976a3af5ac83efdadb7d708b86639321970afb4bdc07867bbd4fbb95064ba4cf" --output d3-4.png
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100  918k    0  918k    0     0   174k      0 --:--:--  0:00:05 --:--:--  185k
+
+d:\Projects\2026\screenshot_go_service>curl "http://localhost:8082/screenshot?url=https://d3.ru" -H "X-API-Key: 976a3af5ac83efdadb7d708b86639321970afb4bdc07867bbd4fbb95064ba4cf" --output d3-5.png
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 1571k    0 1571k    0     0   289k      0 --:--:--  0:00:05 --:--:--  378k
+
+d:\Projects\2026\screenshot_go_service>curl "http://localhost:8082/screenshot?url=https://d3.ru" -H "X-API-Key: 976a3af5ac83efdadb7d708b86639321970afb4bdc07867bbd4fbb95064ba4cf" --output d3-6.png
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100 5582k    0 5582k    0     0   428k      0 --:--:--  0:00:13 --:--:-- 1308k
+
+d:\Projects\2026\screenshot_go_service>
+
+
+----------------------------
+
 
 
 
