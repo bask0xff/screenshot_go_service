@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -51,6 +52,8 @@ func (s *Storage) RunMigrations(cfg *config.Config) error {
 	return nil
 }
 
+// --- USER METHODS ---
+
 func (s *Storage) CreateUser(email, passwordHash string) (*model.User, error) {
 	user := &model.User{}
 	err := s.db.QueryRow(
@@ -69,6 +72,19 @@ func (s *Storage) GetUserByEmail(email string) (*model.User, error) {
 	).Scan(&user.ID, &user.Email, &user.Password, &user.CreatedAt)
 	return user, err
 }
+
+func (s *Storage) GetUserBalance(userID int) (float64, error) {
+	var balance float64
+	err := s.db.QueryRow(`SELECT balance_usd FROM users WHERE id = $1`, userID).Scan(&balance)
+	return balance, err
+}
+
+func (s *Storage) UpdateUserBalance(userID int, amount float64) error {
+	_, err := s.db.Exec(`UPDATE users SET balance_usd = balance_usd + $1 WHERE id = $2`, amount, userID)
+	return err
+}
+
+// --- API KEY METHODS ---
 
 func (s *Storage) CreateAPIKey(userID int) (*model.APIKey, error) {
 	key, err := generateKey()
@@ -94,20 +110,6 @@ func (s *Storage) GetAPIKey(key string) (*model.APIKey, error) {
 	return apiKey, err
 }
 
-func (s *Storage) IncrementRequests(key string) error {
-	_, err := s.db.Exec(
-		`UPDATE api_keys SET requests = requests + 1 WHERE key = $1`, key)
-	return err
-}
-
-func generateKey() (string, error) {
-	bytes := make([]byte, 32)
-	if _, err := rand.Read(bytes); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(bytes), nil
-}
-
 func (s *Storage) GetAPIKeyByUserID(userID int) (*model.APIKey, error) {
 	apiKey := &model.APIKey{}
 	err := s.db.QueryRow(
@@ -115,4 +117,57 @@ func (s *Storage) GetAPIKeyByUserID(userID int) (*model.APIKey, error) {
 		userID,
 	).Scan(&apiKey.ID, &apiKey.UserID, &apiKey.Key, &apiKey.Tier, &apiKey.Requests, &apiKey.CreatedAt)
 	return apiKey, err
+}
+
+func (s *Storage) IncrementRequests(key string) error {
+	_, err := s.db.Exec(
+		`UPDATE api_keys SET requests = requests + 1 WHERE key = $1`, key)
+	return err
+}
+
+// --- PAYMENT & INVOICE METHODS ---
+
+func (s *Storage) GetRandomFreeAddress() (string, error) {
+	var addr string
+	// Выбираем адрес из btcaddress2, которого нет в активных или завершенных инвойсах
+	query := `
+		SELECT address FROM btcaddress2 
+		WHERE address NOT IN (SELECT address FROM btc_invoices WHERE status != 'expired') 
+		ORDER BY RANDOM() LIMIT 1`
+	err := s.db.QueryRow(query).Scan(&addr)
+	if err != nil {
+		return "", err
+	}
+	return addr, nil
+}
+
+func (s *Storage) CreateInvoice(userID int, address string, usdAmount, btcAmount float64) error {
+	expiresAt := time.Now().Add(3 * time.Hour)
+	query := `
+		INSERT INTO btc_invoices (user_id, address, amount_usd, amount_btc, status, expires_at)
+		VALUES ($1, $2, $3, $4, 'pending', $5)`
+	_, err := s.db.Exec(query, userID, address, usdAmount, btcAmount, expiresAt)
+	return err
+}
+
+func (s *Storage) ConfirmInvoice(address string) (int, float64, error) {
+	var userID int
+	var amountUSD float64
+	query := `
+		UPDATE btc_invoices 
+		SET status = 'confirmed' 
+		WHERE address = $1 AND status = 'pending'
+		RETURNING user_id, amount_usd`
+	err := s.db.QueryRow(query, address).Scan(&userID, &amountUSD)
+	return userID, amountUSD, err
+}
+
+// --- HELPERS ---
+
+func generateKey() (string, error) {
+	bytes := make([]byte, 32)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(bytes), nil
 }

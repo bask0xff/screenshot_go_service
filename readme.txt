@@ -8,15 +8,35 @@ docker compose down
 docker compose up -d
 
 
-
-
 ---
 
 docker compose down
 docker compose up -d --build
 docker compose logs api
 
+docker logs screenshot_go_service-api-1
+
 --------------------------------
+
+docker cp import_addresses.sql screenshot_go_service-postgres-1:/import_addresses.sql
+
+d:\Projects\2026\screenshot_go_service>docker exec -it screenshot_go_service-postgres-1 psql -U admin -d mydata -f /import_addresses.sql
+psql:/import_addresses.sql:7: NOTICE:  relation "btcaddress2" already exists, skipping
+CREATE TABLE
+TRUNCATE TABLE
+INSERT 0 1095
+ setval
+--------
+   1095
+(1 row)
+
+
+What's next:
+    Try Docker Debug for seamless, persistent debugging tools in any container or image → docker debug screenshot_go_service-postgres-1
+    Learn more at https://docs.docker.com/go/debug-cli/
+
+d:\Projects\2026\screenshot_go_service>
+
 
 Example to start:
 
