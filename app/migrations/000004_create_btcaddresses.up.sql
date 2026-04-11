@@ -1,15 +1,10 @@
--- Создаем таблицу, если её еще нет (синтаксис Postgres)
 CREATE TABLE IF NOT EXISTS btcaddress2 (
-                                           id SERIAL PRIMARY KEY,
-                                           timestamp INTEGER NOT NULL,
-                                           created_date TIMESTAMP NOT NULL,
-                                           address VARCHAR(255) NOT NULL
-    );
+    id           SERIAL PRIMARY KEY,
+    timestamp    INTEGER NOT NULL,
+    created_date TIMESTAMP NOT NULL,
+    address      VARCHAR(255) NOT NULL
+);
 
--- Очищаем таблицу перед импортом (опционально)
-TRUNCATE TABLE btcaddress2;
-
--- Вставляем данные (убрал кавычки у имен таблиц и поправил формат даты)
 INSERT INTO btcaddress2 (id, timestamp, created_date, address) VALUES
                                                                    (1, 0, '2025-10-14 18:41:47', '1HKBiQovyoB5kuUg2BqUKmpv9AG2QVvkzF'),
                                                                    (2, 0, '2025-10-14 19:24:50', '1EL8DpzLMF92rLBeZgq2fFmmRnbhiKF9bY'),
@@ -1107,5 +1102,6 @@ INSERT INTO btcaddress2 (id, timestamp, created_date, address) VALUES
                                                                    (1094, 0, '2026-04-11 15:52:41', '1F9sgUju5qA5eZURAnFrvfZdsBNF2PLsR2'),
                                                                    (1095, 0, '2026-04-11 16:57:00', '1Lm9r2K79u1kiEGY5c1bJLFJyBACHEYjZM');
 
--- Важно: после импорта с ID нужно обновить счетчик SERIAL
+ON CONFLICT (id) DO NOTHING;
+
 SELECT setval('btcaddress2_id_seq', (SELECT MAX(id) FROM btcaddress2));

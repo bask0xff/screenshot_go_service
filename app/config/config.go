@@ -1,30 +1,39 @@
 package config
 
-import "os"
+import (
+	"log"
+	"os"
+)
 
 type Config struct {
+	BrowserlessURL string
 	DBHost         string
 	DBPort         string
 	DBUser         string
 	DBPassword     string
 	DBName         string
-	BrowserlessURL string
 }
 
 func Load() *Config {
-	return &Config{
+	cfg := &Config{
+		BrowserlessURL: getEnv("BROWSERLESS_URL", "http://browserless:3000/screenshot"),
 		DBHost:         getEnv("POSTGRES_HOST", "postgres"),
 		DBPort:         getEnv("POSTGRES_PORT", "5432"),
-		DBUser:         getEnv("POSTGRES_USER", "admin"),
+		DBUser:         getEnv("POSTGRES_USER", ""),
 		DBPassword:     getEnv("POSTGRES_PASSWORD", ""),
-		DBName:         getEnv("POSTGRES_DB", "mydata"),
-		BrowserlessURL: "http://browserless:3000/screenshot?token=" + getEnv("BROWSERLESS_TOKEN", ""),
+		DBName:         getEnv("POSTGRES_DB", ""),
 	}
+
+	if cfg.DBUser == "" || cfg.DBPassword == "" || cfg.DBName == "" {
+		log.Fatal("POSTGRES_USER, POSTGRES_PASSWORD and POSTGRES_DB are required")
+	}
+
+	return cfg
 }
 
-func getEnv(key, defaultVal string) string {
-	if val := os.Getenv(key); val != "" {
-		return val
+func getEnv(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
 	}
-	return defaultVal
+	return fallback
 }
