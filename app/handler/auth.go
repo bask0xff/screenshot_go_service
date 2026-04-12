@@ -60,6 +60,7 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 
 	apiKey, err := h.storage.CreateAPIKey(user.ID)
 	if err != nil {
+		log.Printf("CreateAPIKey error: %v", err)
 		jsonError(w, "internal error", http.StatusInternalServerError)
 		return
 	}
