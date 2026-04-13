@@ -9,8 +9,11 @@ docker compose up -d
 
 
 ---
+new (clearing database and rebuilding):
 docker compose down -v && docker compose up -d --build && docker compose logs api -f
 
+------
+old:
 
 docker compose down
 docker compose up -d --build
