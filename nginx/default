@@ -1,0 +1,52 @@
+# HTTP → HTTPS
+server {
+    listen 80;
+    listen [::]:80;
+    server_name bask0xff.com www.bask0xff.com;
+
+    return 301 https://$host$request_uri;
+}
+
+# HTTPS
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+
+    server_name bask0xff.com www.bask0xff.com;
+
+    ssl_certificate /etc/letsencrypt/live/bask0xff.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/bask0xff.com/privkey.pem;
+
+    # КЛЮЧЕВОЕ — используем тот же файл, что и в первом сайте
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+
+    location / {
+        proxy_pass http://127.0.0.1:8081;
+
+        # Делаем как в первом сайте
+        proxy_set_header Host localhost;
+        # proxy_set_header Host $host;
+
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Port $server_port;
+
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+
+location /api/ {
+    proxy_pass http://127.0.0.1:8082/;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+}
+
+}
