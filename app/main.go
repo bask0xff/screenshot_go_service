@@ -41,13 +41,14 @@ func main() {
 	paymentHandler := handler.NewPaymentHandler(store)
 	authMiddleware := middleware.NewAuthMiddleware(store)
 
-	http.HandleFunc("/auth/register", authHandler.Register)
-	http.HandleFunc("/auth/login", authHandler.Login)
+	// CORS снаружи, Auth внутри — оба работают
+	http.HandleFunc("/payments/create", corsMiddleware(authMiddleware.Authenticate(paymentHandler.CreateInvoice)))
+	http.HandleFunc("/screenshot", corsMiddleware(authMiddleware.Authenticate(screenshotHandler)))
 
-	http.HandleFunc("/payments/create", authMiddleware.Authenticate(paymentHandler.CreateInvoice))
-	http.HandleFunc("/internal/confirm-payment", confirmPaymentHandler)
-	http.HandleFunc("/screenshot", authMiddleware.Authenticate(screenshotHandler))
-
+	// Эти роуты без Auth — так и должно быть, иначе не войдёшь
+	http.HandleFunc("/auth/register", corsMiddleware(authHandler.Register))
+	http.HandleFunc("/auth/login", corsMiddleware(authHandler.Login))
+	http.HandleFunc("/internal/confirm-payment", corsMiddleware(confirmPaymentHandler))
 	log.Println("server started on :8082")
 	if err := http.ListenAndServe(":8082", nil); err != nil {
 		log.Fatalf("server error: %v", err)
@@ -143,6 +144,21 @@ func confirmPaymentHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("balance updated"))
+}
+
+func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-API-Key")
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		next(w, r)
+	}
 }
 
 func init() {
