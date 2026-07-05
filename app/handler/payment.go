@@ -19,7 +19,9 @@ func NewPaymentHandler(s *storage.Storage) *PaymentHandler {
 }
 
 type invoiceRequest struct {
-	AmountUSD     float64 `json:"amount_usd"`
+	Amount        float64 `json:"amount,omitempty"`
+	AmountUSD     float64 `json:"amount_usd,omitempty"`
+	AmountBTC     float64 `json:"amount_btc,omitempty"`
 	PaymentMethod string  `json:"payment_method,omitempty"`
 	Currency      string  `json:"currency,omitempty"`
 	PromoCode     string  `json:"promo_code,omitempty"`
@@ -27,17 +29,19 @@ type invoiceRequest struct {
 }
 
 type invoiceResponse struct {
-	ID            int     `json:"id"`
-	Address       string  `json:"address"`
-	AmountBTC     float64 `json:"amount_btc"`
-	AmountUSD     float64 `json:"amount_usd"`
-	AmountPayable float64 `json:"amount_payable"`
-	PaymentMethod string  `json:"payment_method"`
-	Currency      string  `json:"currency"`
-	PromoCode     string  `json:"promo_code,omitempty"`
-	Status        string  `json:"status"`
-	IsTest        bool    `json:"is_test"`
-	ExpiresAt     string  `json:"expires_at"`
+	ID             int     `json:"id"`
+	Address        string  `json:"address"`
+	AmountBTC      float64 `json:"amount_btc"`
+	AmountUSD      float64 `json:"amount_usd"`
+	Amount         float64 `json:"amount"`
+	AmountCurrency string  `json:"amount_currency"`
+	AmountPayable  float64 `json:"amount_payable"`
+	PaymentMethod  string  `json:"payment_method"`
+	Currency       string  `json:"currency"`
+	PromoCode      string  `json:"promo_code,omitempty"`
+	Status         string  `json:"status"`
+	IsTest         bool    `json:"is_test"`
+	ExpiresAt      string  `json:"expires_at"`
 }
 
 type cancelRequest struct {
@@ -60,26 +64,41 @@ func (h *PaymentHandler) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req invoiceRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.AmountUSD <= 0 {
-		jsonError(w, "invalid amount", http.StatusBadRequest)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		jsonError(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
 
 	paymentMethod := normalizePaymentMethod(req.PaymentMethod)
-	currency := strings.ToUpper(strings.TrimSpace(req.Currency))
-	if currency == "" {
-		currency = "BTC"
-	}
 	if paymentMethod == "" {
 		paymentMethod = "bitcoin"
 	}
 
-	payableAmount := req.AmountUSD
+	btcPrice, err := getBTCPrice()
+	if err != nil {
+		jsonError(w, "failed to fetch exchange rate", http.StatusInternalServerError)
+		return
+	}
+
+	amountUSD, amountBTC, currency, err := resolveInvoiceAmounts(req, btcPrice)
+	if err != nil {
+		jsonError(w, "invalid amount", http.StatusBadRequest)
+		return
+	}
+
+	payableUSD := amountUSD
+	payableBTC := amountBTC
 	promoCode := strings.ToUpper(strings.TrimSpace(req.PromoCode))
 	if promoCode != "" {
 		promo, err := h.storage.GetPromoCode(promoCode)
 		if err == nil && promo.Active && promo.UsedCount < promo.MaxUses && time.Now().Before(promo.ExpiresAt) {
-			payableAmount = calculateDiscountedAmount(req.AmountUSD, promo.DiscountPercent)
+			if strings.EqualFold(currency, "BTC") {
+				payableBTC = amountBTC * (1 - promo.DiscountPercent/100)
+				payableUSD = payableBTC * btcPrice
+			} else {
+				payableUSD = calculateDiscountedAmount(amountUSD, promo.DiscountPercent)
+				payableBTC = payableUSD / btcPrice
+			}
 			if err := h.storage.UsePromoCode(promoCode); err != nil {
 				log.Printf("failed to increment promo usage: %v", err)
 			}
@@ -89,13 +108,8 @@ func (h *PaymentHandler) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	btcPrice, err := getBTCPrice()
-	if err != nil {
-		jsonError(w, "failed to fetch exchange rate", http.StatusInternalServerError)
-		return
-	}
-
-	btcAmount := payableAmount / btcPrice
+	amountUSD = payableUSD
+	amountBTC = payableBTC
 
 	addr, err := h.storage.GetRandomFreeAddress()
 	if err != nil {
@@ -103,7 +117,7 @@ func (h *PaymentHandler) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	invoice, err := h.storage.CreateInvoiceWithDetails(apiKey.UserID, addr, payableAmount, btcAmount, paymentMethod, currency, promoCode, "")
+	invoice, err := h.storage.CreateInvoiceWithDetails(apiKey.UserID, addr, amountUSD, amountBTC, paymentMethod, currency, promoCode, "", req.IsTest)
 	if err != nil {
 		log.Printf("CRITICAL DATABASE ERROR in CreateInvoice: %v", err)
 		jsonError(w, "database error", http.StatusInternalServerError)
@@ -112,18 +126,25 @@ func (h *PaymentHandler) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 
 	_ = h.storage.AddPaymentEvent(invoice.ID, "created", fmt.Sprintf("payment_method=%s", paymentMethod))
 
+	amountForResponse := amountUSD
+	if strings.EqualFold(currency, "BTC") || strings.EqualFold(currency, "XBT") {
+		amountForResponse = amountBTC
+	}
+
 	jsonResponse(w, invoiceResponse{
-		ID:            invoice.ID,
-		Address:       invoice.Address,
-		AmountBTC:     invoice.AmountBTC,
-		AmountUSD:     invoice.AmountUSD,
-		AmountPayable: payableAmount,
-		PaymentMethod: paymentMethod,
-		Currency:      currency,
-		PromoCode:     promoCode,
-		Status:        invoice.Status,
-		IsTest:        req.IsTest,
-		ExpiresAt:     invoice.ExpiresAt.Format(time.RFC3339),
+		ID:             invoice.ID,
+		Address:        invoice.Address,
+		AmountBTC:      invoice.AmountBTC,
+		AmountUSD:      invoice.AmountUSD,
+		Amount:         amountForResponse,
+		AmountCurrency: currency,
+		AmountPayable:  amountForResponse,
+		PaymentMethod:  paymentMethod,
+		Currency:       currency,
+		PromoCode:      promoCode,
+		Status:         invoice.Status,
+		IsTest:         req.IsTest,
+		ExpiresAt:      invoice.ExpiresAt.Format(time.RFC3339),
 	}, http.StatusCreated)
 }
 
@@ -136,17 +157,13 @@ func (h *PaymentHandler) CreateTestInvoice(w http.ResponseWriter, r *http.Reques
 	}
 
 	var req invoiceRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.AmountUSD <= 0 {
-		jsonError(w, "invalid amount", http.StatusBadRequest)
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		jsonError(w, "invalid request body", http.StatusBadRequest)
 		return
 	}
 	req.IsTest = true
 
 	paymentMethod := normalizePaymentMethod(req.PaymentMethod)
-	currency := strings.ToUpper(strings.TrimSpace(req.Currency))
-	if currency == "" {
-		currency = "BTC"
-	}
 	if paymentMethod == "" {
 		paymentMethod = "bitcoin"
 	}
@@ -157,14 +174,18 @@ func (h *PaymentHandler) CreateTestInvoice(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	btcAmount := req.AmountUSD / btcPrice
+	amountUSD, amountBTC, currency, err := resolveInvoiceAmounts(req, btcPrice)
+	if err != nil {
+		jsonError(w, "invalid amount", http.StatusBadRequest)
+		return
+	}
 	addr, err := h.storage.GetRandomFreeAddress()
 	if err != nil {
 		jsonError(w, "no addresses available", http.StatusServiceUnavailable)
 		return
 	}
 
-	invoice, err := h.storage.CreateInvoiceWithDetails(apiKey.UserID, addr, req.AmountUSD, btcAmount, paymentMethod, currency, "", "")
+	invoice, err := h.storage.CreateInvoiceWithDetails(apiKey.UserID, addr, amountUSD, amountBTC, paymentMethod, currency, "", "", req.IsTest)
 	if err != nil {
 		log.Printf("CRITICAL DATABASE ERROR in CreateTestInvoice: %v", err)
 		jsonError(w, "database error", http.StatusInternalServerError)
@@ -173,17 +194,24 @@ func (h *PaymentHandler) CreateTestInvoice(w http.ResponseWriter, r *http.Reques
 
 	_ = h.storage.AddPaymentEvent(invoice.ID, "test_created", fmt.Sprintf("payment_method=%s", paymentMethod))
 
+	amountForResponse := amountUSD
+	if strings.EqualFold(currency, "BTC") || strings.EqualFold(currency, "XBT") {
+		amountForResponse = amountBTC
+	}
+
 	jsonResponse(w, invoiceResponse{
-		ID:            invoice.ID,
-		Address:       invoice.Address,
-		AmountBTC:     invoice.AmountBTC,
-		AmountUSD:     invoice.AmountUSD,
-		AmountPayable: req.AmountUSD,
-		PaymentMethod: paymentMethod,
-		Currency:      currency,
-		Status:        invoice.Status,
-		IsTest:        true,
-		ExpiresAt:     invoice.ExpiresAt.Format(time.RFC3339),
+		ID:             invoice.ID,
+		Address:        invoice.Address,
+		AmountBTC:      invoice.AmountBTC,
+		AmountUSD:      invoice.AmountUSD,
+		Amount:         amountForResponse,
+		AmountCurrency: currency,
+		AmountPayable:  amountForResponse,
+		PaymentMethod:  paymentMethod,
+		Currency:       currency,
+		Status:         invoice.Status,
+		IsTest:         true,
+		ExpiresAt:      invoice.ExpiresAt.Format(time.RFC3339),
 	}, http.StatusCreated)
 }
 
@@ -221,6 +249,54 @@ func (h *PaymentHandler) CreatePromoCode(w http.ResponseWriter, r *http.Request)
 	}
 
 	jsonResponse(w, promo, http.StatusCreated)
+}
+
+func resolveInvoiceAmounts(req invoiceRequest, btcPrice float64) (amountUSD, amountBTC float64, currency string, err error) {
+	currency = strings.ToUpper(strings.TrimSpace(req.Currency))
+	if currency == "" {
+		if req.AmountBTC > 0 {
+			currency = "BTC"
+		} else {
+			currency = "USD"
+		}
+	}
+
+	switch currency {
+	case "BTC", "XBT":
+		if req.AmountBTC > 0 {
+			amountBTC = req.AmountBTC
+			amountUSD = amountBTC * btcPrice
+			return
+		}
+		if req.AmountUSD > 0 {
+			amountUSD = req.AmountUSD
+			amountBTC = amountUSD / btcPrice
+			return
+		}
+		if req.Amount > 0 {
+			amountBTC = req.Amount
+			amountUSD = amountBTC * btcPrice
+			return
+		}
+	case "USD", "USDT":
+		if req.AmountUSD > 0 {
+			amountUSD = req.AmountUSD
+			amountBTC = amountUSD / btcPrice
+			return
+		}
+		if req.AmountBTC > 0 {
+			amountBTC = req.AmountBTC
+			amountUSD = amountBTC * btcPrice
+			return
+		}
+		if req.Amount > 0 {
+			amountUSD = req.Amount
+			amountBTC = amountUSD / btcPrice
+			return
+		}
+	}
+
+	return 0, 0, currency, fmt.Errorf("invalid amount")
 }
 
 func calculateDiscountedAmount(amount float64, percent float64) float64 {

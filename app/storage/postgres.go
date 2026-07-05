@@ -162,14 +162,14 @@ func (s *Storage) ConfirmInvoice(address string) (int, float64, error) {
 	return userID, amountUSD, err
 }
 
-func (s *Storage) CreateInvoiceWithDetails(userID int, address string, usdAmount, btcAmount float64, paymentMethod, currency, promoCode, paymentRef string) (*model.Invoice, error) {
+func (s *Storage) CreateInvoiceWithDetails(userID int, address string, usdAmount, btcAmount float64, paymentMethod, currency, promoCode, paymentRef string, isTest bool) (*model.Invoice, error) {
 	invoice := &model.Invoice{}
 	expiresAt := time.Now().Add(3 * time.Hour)
 	err := s.db.QueryRow(`
 		INSERT INTO btc_invoices (user_id, address, amount_usd, amount_btc, status, payment_method, currency, promo_code, payment_reference, is_test, expires_at)
 		VALUES ($1, $2, $3, $4, 'pending', $5, $6, $7, $8, $9, $10)
 		RETURNING id, user_id, address, amount_usd, amount_btc, status, payment_method, currency, promo_code, payment_reference, is_test, created_at, expires_at
-	`, userID, address, usdAmount, btcAmount, paymentMethod, currency, promoCode, paymentRef, false, expiresAt).Scan(
+	`, userID, address, usdAmount, btcAmount, paymentMethod, currency, promoCode, paymentRef, isTest, expiresAt).Scan(
 		&invoice.ID,
 		&invoice.UserID,
 		&invoice.Address,

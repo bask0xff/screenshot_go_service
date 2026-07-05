@@ -18,3 +18,19 @@ func TestNormalizePaymentMethod(t *testing.T) {
 		t.Fatalf("expected card, got %s", got)
 	}
 }
+
+func TestResolveInvoiceAmountsSupportsBTCAndUSD(t *testing.T) {
+	usd, btc, currency, err := resolveInvoiceAmounts(invoiceRequest{AmountBTC: 0.25, Currency: "BTC"}, 10000)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if currency != "BTC" {
+		t.Fatalf("expected currency BTC, got %s", currency)
+	}
+	if btc != 0.25 {
+		t.Fatalf("expected btc amount 0.25, got %.8f", btc)
+	}
+	if usd != 2500 {
+		t.Fatalf("expected usd amount 2500, got %.8f", usd)
+	}
+}
