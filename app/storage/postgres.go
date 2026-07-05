@@ -167,8 +167,8 @@ func (s *Storage) CreateInvoiceWithDetails(userID int, address string, amountSat
 	invoice := &model.Invoice{}
 	expiresAt := time.Now().Add(3 * time.Hour)
 	err := s.db.QueryRow(`
-		INSERT INTO btc_invoices (user_id, address, amount_satoshi, status, payment_method, currency, promo_code, payment_reference, is_test, expires_at)
-		VALUES ($1, $2, $3, 'pending', $4, $5, $6, $7, $8, $9)
+		INSERT INTO btc_invoices (user_id, address, amount_usd, amount_btc, amount_satoshi, status, payment_method, currency, promo_code, payment_reference, is_test, expires_at)
+		VALUES ($1, $2, 0.0, 0.0, $3, 'pending', $4, $5, $6, $7, $8, $9)
 		RETURNING id, user_id, address, amount_satoshi, status, payment_method, currency, promo_code, payment_reference, is_test, created_at, expires_at
 	`, userID, address, amountSatoshi, paymentMethod, currency, promoCode, paymentRef, isTest, expiresAt).Scan(
 		&invoice.ID,
