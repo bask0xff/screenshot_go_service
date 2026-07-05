@@ -264,6 +264,14 @@ func resolveInvoiceAmounts(req invoiceRequest, btcPrice float64, rate *model.Cur
 	return 0, currency, fmt.Errorf("invalid amount")
 }
 
+func satoshisToUSD(sats int64, btcPrice float64) float64 {
+	return float64(sats) / 100000000 * btcPrice
+}
+
+func satoshisToBTC(sats int64) float64 {
+	return float64(sats) / 100000000
+}
+
 func currencyCodeOrDefault(code string) string {
 	trimmed := strings.ToUpper(strings.TrimSpace(code))
 	if trimmed == "" {

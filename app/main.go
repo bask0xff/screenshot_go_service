@@ -288,6 +288,34 @@ func syncPendingBitcoinInvoices() {
 	}
 }
 
+func satoshisToUSD(sats int64, btcPrice float64) float64 {
+	return float64(sats) / 100000000 * btcPrice
+}
+
+func satoshisToBTC(sats int64) float64 {
+	return float64(sats) / 100000000
+}
+
+func getBTCPrice() (float64, error) {
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Get("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd")
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	var data map[string]map[string]float64
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		return 0, err
+	}
+
+	price, ok := data["bitcoin"]["usd"]
+	if !ok {
+		return 0, fmt.Errorf("price not found")
+	}
+	return price, nil
+}
+
 func init() {
 	_ = os.Getenv
 }
