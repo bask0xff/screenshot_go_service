@@ -94,6 +94,12 @@ cd app
 go test ./...
 ```
 
+### Тесты промо-кодов
+```bash
+cd app
+go test ./... -run Promo
+```
+
 ### Форматирование и сборка
 ```bash
 cd app

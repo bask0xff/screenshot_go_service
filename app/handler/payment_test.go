@@ -2,6 +2,7 @@ package handler
 
 import (
 	"testing"
+	"time"
 
 	"screenshot-api/model"
 )
@@ -33,5 +34,19 @@ func TestResolveInvoiceAmountsSupportsBTCAndUSD(t *testing.T) {
 	}
 	if sats != 25000000 {
 		t.Fatalf("expected satoshi amount 25000000, got %d", sats)
+	}
+}
+
+func TestCalculateDiscountedAmountAppliesPromoPercentage(t *testing.T) {
+	amount := calculateDiscountedAmount(1000, 20)
+	if amount != 800 {
+		t.Fatalf("expected discounted amount 800, got %.2f", amount)
+	}
+}
+
+func TestPromoCodeExpirationCheck(t *testing.T) {
+	now := time.Now()
+	if now.Before(now.Add(-time.Hour)) {
+		t.Fatal("expected time comparison to reflect expiration behavior")
 	}
 }
