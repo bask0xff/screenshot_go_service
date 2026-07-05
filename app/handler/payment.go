@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"crypto/rand"
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/big"
 	"net/http"
 	"screenshot-api/model"
 	"screenshot-api/storage"
@@ -231,8 +233,17 @@ func (h *PaymentHandler) CancelInvoice(w http.ResponseWriter, r *http.Request) {
 
 func (h *PaymentHandler) CreatePromoCode(w http.ResponseWriter, r *http.Request) {
 	var req promoCodeRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Code == "" || req.DiscountPercent < 0 || req.DiscountPercent > 100 {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.DiscountPercent < 0 || req.DiscountPercent > 100 {
 		jsonError(w, "invalid promo code payload", http.StatusBadRequest)
+		return
+	}
+
+	code := strings.ToUpper(strings.TrimSpace(req.Code))
+	if code == "" {
+		code = generatePromoCode(12)
+	}
+	if len(code) != 12 || !strings.ContainsAny(code, "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") {
+		jsonError(w, "promo code must be 12 uppercase alphanumeric characters", http.StatusBadRequest)
 		return
 	}
 
@@ -241,13 +252,26 @@ func (h *PaymentHandler) CreatePromoCode(w http.ResponseWriter, r *http.Request)
 		expiresAt = time.Now().Add(24 * time.Hour)
 	}
 
-	promo, err := h.storage.CreatePromoCode(strings.ToUpper(req.Code), req.DiscountPercent, req.MaxUses, expiresAt)
+	promo, err := h.storage.CreatePromoCode(code, req.DiscountPercent, req.MaxUses, expiresAt)
 	if err != nil {
 		jsonError(w, "failed to create promo code", http.StatusInternalServerError)
 		return
 	}
 
 	jsonResponse(w, promo, http.StatusCreated)
+}
+
+func generatePromoCode(length int) string {
+	const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	b := make([]byte, length)
+	for i := range b {
+		idx, err := rand.Int(rand.Reader, big.NewInt(int64(len(charset))))
+		if err != nil {
+			return strings.ToUpper(strings.TrimSpace(fmt.Sprintf("PROMO%02d", i+1)))
+		}
+		b[i] = charset[idx.Int64()]
+	}
+	return string(b)
 }
 
 func resolveInvoiceAmounts(req invoiceRequest, btcPrice float64, rate *model.CurrencyRate) (amountSatoshi int64, currency string, err error) {

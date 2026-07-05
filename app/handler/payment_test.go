@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"regexp"
 	"testing"
 	"time"
 
@@ -48,5 +49,16 @@ func TestPromoCodeExpirationCheck(t *testing.T) {
 	now := time.Now()
 	if now.Before(now.Add(-time.Hour)) {
 		t.Fatal("expected time comparison to reflect expiration behavior")
+	}
+}
+
+func TestGeneratePromoCodeUsesUppercase12CharacterFormat(t *testing.T) {
+	code := generatePromoCode(12)
+	matched, err := regexp.MatchString(`^[A-Z0-9]{12}$`, code)
+	if err != nil {
+		t.Fatalf("unexpected regex error: %v", err)
+	}
+	if !matched {
+		t.Fatalf("expected promo code %q to match uppercase 12-character format", code)
 	}
 }
