@@ -24,6 +24,7 @@ type Invoice struct {
 	Address       string     `json:"address"`
 	AmountUSD     float64    `json:"amount_usd"`
 	AmountBTC     float64    `json:"amount_btc"`
+	AmountSatoshi int64      `json:"amount_satoshi"`
 	Status        string     `json:"status"`
 	PaymentMethod string     `json:"payment_method"`
 	Currency      string     `json:"currency"`
@@ -34,6 +35,24 @@ type Invoice struct {
 	ExpiresAt     time.Time  `json:"expires_at"`
 	ConfirmedAt   *time.Time `json:"confirmed_at,omitempty"`
 	CancelledAt   *time.Time `json:"cancelled_at,omitempty"`
+}
+
+type Currency struct {
+	ID        int       `json:"id"`
+	Code      string    `json:"code"`
+	Name      string    `json:"name"`
+	IsCrypto  bool      `json:"is_crypto"`
+	IsActive  bool      `json:"is_active"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type CurrencyRate struct {
+	ID            int       `json:"id"`
+	CurrencyCode  string    `json:"currency_code"`
+	RateToUSD     float64   `json:"rate_to_usd"`
+	RateToSatoshi int64     `json:"rate_to_satoshi"`
+	EffectiveAt   time.Time `json:"effective_at"`
+	CreatedAt     time.Time `json:"created_at"`
 }
 
 type PromoCode struct {

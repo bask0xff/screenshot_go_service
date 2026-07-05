@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"screenshot-api/model"
 	"screenshot-api/storage"
 	"strings"
 	"time"
@@ -33,6 +34,7 @@ type invoiceResponse struct {
 	Address        string  `json:"address"`
 	AmountBTC      float64 `json:"amount_btc"`
 	AmountUSD      float64 `json:"amount_usd"`
+	AmountSatoshi  int64   `json:"amount_satoshi"`
 	Amount         float64 `json:"amount"`
 	AmountCurrency string  `json:"amount_currency"`
 	AmountPayable  float64 `json:"amount_payable"`
@@ -80,7 +82,13 @@ func (h *PaymentHandler) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	amountUSD, amountBTC, currency, err := resolveInvoiceAmounts(req, btcPrice)
+	rate, err := h.storage.GetCurrencyRate(currencyCodeOrDefault(req.Currency), btcPrice)
+	if err != nil {
+		jsonError(w, "failed to resolve currency rate", http.StatusInternalServerError)
+		return
+	}
+
+	amountUSD, amountBTC, amountSatoshi, currency, err := resolveInvoiceAmounts(req, btcPrice, rate)
 	if err != nil {
 		jsonError(w, "invalid amount", http.StatusBadRequest)
 		return
@@ -88,6 +96,7 @@ func (h *PaymentHandler) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 
 	payableUSD := amountUSD
 	payableBTC := amountBTC
+	payableSatoshi := amountSatoshi
 	promoCode := strings.ToUpper(strings.TrimSpace(req.PromoCode))
 	if promoCode != "" {
 		promo, err := h.storage.GetPromoCode(promoCode)
@@ -99,6 +108,7 @@ func (h *PaymentHandler) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 				payableUSD = calculateDiscountedAmount(amountUSD, promo.DiscountPercent)
 				payableBTC = payableUSD / btcPrice
 			}
+			payableSatoshi = int64(payableBTC * 100000000)
 			if err := h.storage.UsePromoCode(promoCode); err != nil {
 				log.Printf("failed to increment promo usage: %v", err)
 			}
@@ -110,6 +120,7 @@ func (h *PaymentHandler) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 
 	amountUSD = payableUSD
 	amountBTC = payableBTC
+	amountSatoshi = payableSatoshi
 
 	addr, err := h.storage.GetRandomFreeAddress()
 	if err != nil {
@@ -117,7 +128,7 @@ func (h *PaymentHandler) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	invoice, err := h.storage.CreateInvoiceWithDetails(apiKey.UserID, addr, amountUSD, amountBTC, paymentMethod, currency, promoCode, "", req.IsTest)
+	invoice, err := h.storage.CreateInvoiceWithDetails(apiKey.UserID, addr, amountUSD, amountBTC, amountSatoshi, paymentMethod, currency, promoCode, "", req.IsTest)
 	if err != nil {
 		log.Printf("CRITICAL DATABASE ERROR in CreateInvoice: %v", err)
 		jsonError(w, "database error", http.StatusInternalServerError)
@@ -136,6 +147,7 @@ func (h *PaymentHandler) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 		Address:        invoice.Address,
 		AmountBTC:      invoice.AmountBTC,
 		AmountUSD:      invoice.AmountUSD,
+		AmountSatoshi:  invoice.AmountSatoshi,
 		Amount:         amountForResponse,
 		AmountCurrency: currency,
 		AmountPayable:  amountForResponse,
@@ -174,7 +186,13 @@ func (h *PaymentHandler) CreateTestInvoice(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	amountUSD, amountBTC, currency, err := resolveInvoiceAmounts(req, btcPrice)
+	rate, err := h.storage.GetCurrencyRate(currencyCodeOrDefault(req.Currency), btcPrice)
+	if err != nil {
+		jsonError(w, "failed to resolve currency rate", http.StatusInternalServerError)
+		return
+	}
+
+	amountUSD, amountBTC, amountSatoshi, currency, err := resolveInvoiceAmounts(req, btcPrice, rate)
 	if err != nil {
 		jsonError(w, "invalid amount", http.StatusBadRequest)
 		return
@@ -185,7 +203,7 @@ func (h *PaymentHandler) CreateTestInvoice(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	invoice, err := h.storage.CreateInvoiceWithDetails(apiKey.UserID, addr, amountUSD, amountBTC, paymentMethod, currency, "", "", req.IsTest)
+	invoice, err := h.storage.CreateInvoiceWithDetails(apiKey.UserID, addr, amountUSD, amountBTC, amountSatoshi, paymentMethod, currency, "", "", req.IsTest)
 	if err != nil {
 		log.Printf("CRITICAL DATABASE ERROR in CreateTestInvoice: %v", err)
 		jsonError(w, "database error", http.StatusInternalServerError)
@@ -204,6 +222,7 @@ func (h *PaymentHandler) CreateTestInvoice(w http.ResponseWriter, r *http.Reques
 		Address:        invoice.Address,
 		AmountBTC:      invoice.AmountBTC,
 		AmountUSD:      invoice.AmountUSD,
+		AmountSatoshi:  invoice.AmountSatoshi,
 		Amount:         amountForResponse,
 		AmountCurrency: currency,
 		AmountPayable:  amountForResponse,
@@ -251,7 +270,7 @@ func (h *PaymentHandler) CreatePromoCode(w http.ResponseWriter, r *http.Request)
 	jsonResponse(w, promo, http.StatusCreated)
 }
 
-func resolveInvoiceAmounts(req invoiceRequest, btcPrice float64) (amountUSD, amountBTC float64, currency string, err error) {
+func resolveInvoiceAmounts(req invoiceRequest, btcPrice float64, rate *model.CurrencyRate) (amountUSD, amountBTC float64, amountSatoshi int64, currency string, err error) {
 	currency = strings.ToUpper(strings.TrimSpace(req.Currency))
 	if currency == "" {
 		if req.AmountBTC > 0 {
@@ -266,37 +285,76 @@ func resolveInvoiceAmounts(req invoiceRequest, btcPrice float64) (amountUSD, amo
 		if req.AmountBTC > 0 {
 			amountBTC = req.AmountBTC
 			amountUSD = amountBTC * btcPrice
+			amountSatoshi = int64(amountBTC * 100000000)
 			return
 		}
 		if req.AmountUSD > 0 {
 			amountUSD = req.AmountUSD
 			amountBTC = amountUSD / btcPrice
+			amountSatoshi = int64(amountBTC * 100000000)
 			return
 		}
 		if req.Amount > 0 {
 			amountBTC = req.Amount
 			amountUSD = amountBTC * btcPrice
+			amountSatoshi = int64(amountBTC * 100000000)
 			return
 		}
 	case "USD", "USDT":
 		if req.AmountUSD > 0 {
 			amountUSD = req.AmountUSD
 			amountBTC = amountUSD / btcPrice
+			amountSatoshi = int64(amountBTC * 100000000)
 			return
 		}
 		if req.AmountBTC > 0 {
 			amountBTC = req.AmountBTC
 			amountUSD = amountBTC * btcPrice
+			amountSatoshi = int64(amountBTC * 100000000)
 			return
 		}
 		if req.Amount > 0 {
 			amountUSD = req.Amount
 			amountBTC = amountUSD / btcPrice
+			amountSatoshi = int64(amountBTC * 100000000)
+			return
+		}
+	default:
+		if req.Amount > 0 {
+			if rate != nil {
+				amountUSD = req.Amount * rate.RateToUSD
+				amountBTC = amountUSD / btcPrice
+				amountSatoshi = int64(req.Amount * float64(rate.RateToSatoshi))
+				return
+			}
+			amountUSD = req.Amount
+			amountBTC = amountUSD / btcPrice
+			amountSatoshi = int64(amountBTC * 100000000)
+			return
+		}
+		if req.AmountUSD > 0 {
+			amountUSD = req.AmountUSD
+			amountBTC = amountUSD / btcPrice
+			amountSatoshi = int64(amountBTC * 100000000)
+			return
+		}
+		if req.AmountBTC > 0 {
+			amountBTC = req.AmountBTC
+			amountUSD = amountBTC * btcPrice
+			amountSatoshi = int64(amountBTC * 100000000)
 			return
 		}
 	}
 
-	return 0, 0, currency, fmt.Errorf("invalid amount")
+	return 0, 0, 0, currency, fmt.Errorf("invalid amount")
+}
+
+func currencyCodeOrDefault(code string) string {
+	trimmed := strings.ToUpper(strings.TrimSpace(code))
+	if trimmed == "" {
+		return "USD"
+	}
+	return trimmed
 }
 
 func calculateDiscountedAmount(amount float64, percent float64) float64 {

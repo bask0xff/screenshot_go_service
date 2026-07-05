@@ -1,0 +1,19 @@
+CREATE TABLE IF NOT EXISTS currencies (
+    id SERIAL PRIMARY KEY,
+    code VARCHAR(10) UNIQUE NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    is_crypto BOOLEAN NOT NULL DEFAULT FALSE,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS currency_rates (
+    id SERIAL PRIMARY KEY,
+    currency_code VARCHAR(10) NOT NULL REFERENCES currencies(code) ON DELETE CASCADE,
+    rate_to_usd NUMERIC(20, 8) NOT NULL DEFAULT 1,
+    rate_to_satoshi BIGINT NOT NULL DEFAULT 0,
+    effective_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+ALTER TABLE btc_invoices ADD COLUMN IF NOT EXISTS amount_satoshi BIGINT NOT NULL DEFAULT 0;

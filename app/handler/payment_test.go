@@ -1,6 +1,10 @@
 package handler
 
-import "testing"
+import (
+	"testing"
+
+	"screenshot-api/model"
+)
 
 func TestCalculateDiscountedAmount(t *testing.T) {
 	got := calculateDiscountedAmount(100, 10)
@@ -20,7 +24,7 @@ func TestNormalizePaymentMethod(t *testing.T) {
 }
 
 func TestResolveInvoiceAmountsSupportsBTCAndUSD(t *testing.T) {
-	usd, btc, currency, err := resolveInvoiceAmounts(invoiceRequest{AmountBTC: 0.25, Currency: "BTC"}, 10000)
+	usd, btc, sats, currency, err := resolveInvoiceAmounts(invoiceRequest{AmountBTC: 0.25, Currency: "BTC"}, 10000, &model.CurrencyRate{RateToSatoshi: 100000000, RateToUSD: 1})
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -32,5 +36,8 @@ func TestResolveInvoiceAmountsSupportsBTCAndUSD(t *testing.T) {
 	}
 	if usd != 2500 {
 		t.Fatalf("expected usd amount 2500, got %.8f", usd)
+	}
+	if sats != 25000000 {
+		t.Fatalf("expected satoshi amount 25000000, got %d", sats)
 	}
 }
