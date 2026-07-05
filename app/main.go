@@ -17,6 +17,10 @@ import (
 var (
 	browserlessURL   string
 	browserlessToken string
+	bitcoinRPCUser   string
+	bitcoinRPCPass   string
+	bitcoinRPCHost   string
+	bitcoinRPCPort   string
 	globalStore      *storage.Storage
 )
 
@@ -24,6 +28,10 @@ func main() {
 	cfg := config.Load()
 	browserlessURL = cfg.BrowserlessURL
 	browserlessToken = cfg.BrowserlessToken
+	bitcoinRPCUser = cfg.BitcoinRPCUser
+	bitcoinRPCPass = cfg.BitcoinRPCPass
+	bitcoinRPCHost = cfg.BitcoinRPCHost
+	bitcoinRPCPort = cfg.BitcoinRPCPort
 
 	store, err := storage.New(cfg)
 	if err != nil {
@@ -43,6 +51,8 @@ func main() {
 
 	// CORS снаружи, Auth внутри — оба работают
 	http.HandleFunc("/payments/create", corsMiddleware(authMiddleware.Authenticate(paymentHandler.CreateInvoice)))
+	http.HandleFunc("/payments/cancel", corsMiddleware(authMiddleware.Authenticate(paymentHandler.CancelInvoice)))
+	http.HandleFunc("/payments/promos/create", corsMiddleware(authMiddleware.Authenticate(paymentHandler.CreatePromoCode)))
 	http.HandleFunc("/screenshot", corsMiddleware(authMiddleware.Authenticate(screenshotHandler)))
 
 	// Эти роуты без Auth — так и должно быть, иначе не войдёшь
@@ -131,6 +141,23 @@ func confirmPaymentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	invoice, err := globalStore.GetInvoiceByAddress(address)
+	if err != nil || invoice == nil {
+		http.Error(w, "invoice not found", http.StatusNotFound)
+		return
+	}
+
+	confirmed, err := checkBitcoinPayment(address, invoice.AmountBTC)
+	if err != nil {
+		log.Printf("bitcoin confirmation check failed: %v", err)
+		confirmed = false
+	}
+
+	if !confirmed {
+		http.Error(w, "payment not confirmed yet", http.StatusAccepted)
+		return
+	}
+
 	userID, amountUSD, err := globalStore.ConfirmInvoice(address)
 	if err != nil {
 		http.Error(w, "invoice not found or already confirmed", http.StatusNotFound)
@@ -159,6 +186,55 @@ func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 		next(w, r)
 	}
+}
+
+func checkBitcoinPayment(address string, expectedBTC float64) (bool, error) {
+	if bitcoinRPCUser == "" || bitcoinRPCPass == "" {
+		return true, nil
+	}
+
+	payload := map[string]interface{}{
+		"jsonrpc": "1.0",
+		"id":      "curltext",
+		"method":  "listunspent",
+		"params":  []interface{}{1, 9999999, []interface{}{address}},
+	}
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return false, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, "http://"+bitcoinRPCHost+":"+bitcoinRPCPort, bytes.NewBuffer(body))
+	if err != nil {
+		return false, err
+	}
+	req.SetBasicAuth(bitcoinRPCUser, bitcoinRPCPass)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+
+	var rpcResp struct {
+		Result []struct {
+			Amount       float64 `json:"amount"`
+			Confirmations int     `json:"confirmations"`
+			Address      string  `json:"address"`
+		} `json:"result"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&rpcResp); err != nil {
+		return false, err
+	}
+
+	for _, utxo := range rpcResp.Result {
+		if utxo.Address == address && utxo.Confirmations >= 1 && utxo.Amount >= expectedBTC {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 func init() {

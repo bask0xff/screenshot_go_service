@@ -155,11 +155,117 @@ func (s *Storage) ConfirmInvoice(address string) (int, float64, error) {
 	var amountUSD float64
 	query := `
 		UPDATE btc_invoices 
-		SET status = 'confirmed' 
+		SET status = 'confirmed', confirmed_at = NOW()
 		WHERE address = $1 AND status = 'pending'
 		RETURNING user_id, amount_usd`
 	err := s.db.QueryRow(query, address).Scan(&userID, &amountUSD)
 	return userID, amountUSD, err
+}
+
+func (s *Storage) CreateInvoiceWithDetails(userID int, address string, usdAmount, btcAmount float64, paymentMethod, currency, promoCode, paymentRef string) (*model.Invoice, error) {
+	invoice := &model.Invoice{}
+	expiresAt := time.Now().Add(3 * time.Hour)
+	err := s.db.QueryRow(`
+		INSERT INTO btc_invoices (user_id, address, amount_usd, amount_btc, status, payment_method, currency, promo_code, payment_reference, expires_at)
+		VALUES ($1, $2, $3, $4, 'pending', $5, $6, $7, $8, $9)
+		RETURNING id, user_id, address, amount_usd, amount_btc, status, payment_method, currency, promo_code, payment_reference, created_at, expires_at
+	`, userID, address, usdAmount, btcAmount, paymentMethod, currency, promoCode, paymentRef, expiresAt).Scan(
+		&invoice.ID,
+		&invoice.UserID,
+		&invoice.Address,
+		&invoice.AmountUSD,
+		&invoice.AmountBTC,
+		&invoice.Status,
+		&invoice.PaymentMethod,
+		&invoice.Currency,
+		&invoice.PromoCode,
+		&invoice.PaymentRef,
+		&invoice.CreatedAt,
+		&invoice.ExpiresAt,
+	)
+	return invoice, err
+}
+
+func (s *Storage) GetInvoiceByAddress(address string) (*model.Invoice, error) {
+	invoice := &model.Invoice{}
+	err := s.db.QueryRow(`
+		SELECT id, user_id, address, amount_usd, amount_btc, status, payment_method, currency, promo_code, payment_reference, created_at, expires_at, confirmed_at, cancelled_at
+		FROM btc_invoices WHERE address = $1
+	`, address).Scan(
+		&invoice.ID,
+		&invoice.UserID,
+		&invoice.Address,
+		&invoice.AmountUSD,
+		&invoice.AmountBTC,
+		&invoice.Status,
+		&invoice.PaymentMethod,
+		&invoice.Currency,
+		&invoice.PromoCode,
+		&invoice.PaymentRef,
+		&invoice.CreatedAt,
+		&invoice.ExpiresAt,
+		&invoice.ConfirmedAt,
+		&invoice.CancelledAt,
+	)
+	return invoice, err
+}
+
+func (s *Storage) CancelInvoice(address string) error {
+	_, err := s.db.Exec(`
+		UPDATE btc_invoices SET status = 'cancelled', cancelled_at = NOW() WHERE address = $1 AND status = 'pending'
+	`, address)
+	return err
+}
+
+func (s *Storage) CreatePromoCode(code string, discountPercent float64, maxUses int, expiresAt time.Time) (*model.PromoCode, error) {
+	promo := &model.PromoCode{}
+	err := s.db.QueryRow(`
+		INSERT INTO promo_codes (code, discount_percent, max_uses, used_count, active, expires_at)
+		VALUES ($1, $2, $3, 0, true, $4)
+		RETURNING id, code, discount_percent, max_uses, used_count, active, expires_at, created_at
+	`, code, discountPercent, maxUses, expiresAt).Scan(
+		&promo.ID,
+		&promo.Code,
+		&promo.DiscountPercent,
+		&promo.MaxUses,
+		&promo.UsedCount,
+		&promo.Active,
+		&promo.ExpiresAt,
+		&promo.CreatedAt,
+	)
+	return promo, err
+}
+
+func (s *Storage) GetPromoCode(code string) (*model.PromoCode, error) {
+	promo := &model.PromoCode{}
+	err := s.db.QueryRow(`
+		SELECT id, code, discount_percent, max_uses, used_count, active, expires_at, created_at
+		FROM promo_codes WHERE code = $1
+	`, code).Scan(
+		&promo.ID,
+		&promo.Code,
+		&promo.DiscountPercent,
+		&promo.MaxUses,
+		&promo.UsedCount,
+		&promo.Active,
+		&promo.ExpiresAt,
+		&promo.CreatedAt,
+	)
+	return promo, err
+}
+
+func (s *Storage) UsePromoCode(code string) error {
+	_, err := s.db.Exec(`
+		UPDATE promo_codes SET used_count = used_count + 1 WHERE code = $1
+	`, code)
+	return err
+}
+
+func (s *Storage) AddPaymentEvent(invoiceID int, eventType, payload string) error {
+	_, err := s.db.Exec(`
+		INSERT INTO payment_events (invoice_id, event_type, payload) VALUES ($1, $2, $3)
+	`, invoiceID, eventType, payload)
+	return err
 }
 
 // --- HELPERS ---

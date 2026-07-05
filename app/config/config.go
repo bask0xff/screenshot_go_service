@@ -13,6 +13,10 @@ type Config struct {
 	DBUser           string
 	DBPassword       string
 	DBName           string
+	BitcoinRPCUser   string
+	BitcoinRPCPass   string
+	BitcoinRPCHost   string
+	BitcoinRPCPort   string
 }
 
 func Load() *Config {
@@ -24,6 +28,10 @@ func Load() *Config {
 		DBUser:           getEnv("POSTGRES_USER", ""),
 		DBPassword:       getEnv("POSTGRES_PASSWORD", ""),
 		DBName:           getEnv("POSTGRES_DB", ""),
+		BitcoinRPCUser:   getEnv("BITCOIN_RPC_USER", ""),
+		BitcoinRPCPass:   getEnv("BITCOIN_RPC_PASSWORD", ""),
+		BitcoinRPCHost:   getEnv("BITCOIN_RPC_HOST", "127.0.0.1"),
+		BitcoinRPCPort:   getEnv("BITCOIN_RPC_PORT", "8332"),
 	}
 
 	if cfg.DBUser == "" || cfg.DBPassword == "" || cfg.DBName == "" {

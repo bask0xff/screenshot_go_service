@@ -1,0 +1,26 @@
+CREATE TABLE IF NOT EXISTS promo_codes (
+    id SERIAL PRIMARY KEY,
+    code VARCHAR(64) UNIQUE NOT NULL,
+    discount_percent DECIMAL(5,2) NOT NULL DEFAULT 0,
+    max_uses INTEGER NOT NULL DEFAULT 1,
+    used_count INTEGER NOT NULL DEFAULT 0,
+    active BOOLEAN NOT NULL DEFAULT TRUE,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS payment_events (
+    id SERIAL PRIMARY KEY,
+    invoice_id INTEGER REFERENCES btc_invoices(id) ON DELETE CASCADE,
+    event_type VARCHAR(64) NOT NULL,
+    payload TEXT,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+ALTER TABLE btc_invoices
+    ADD COLUMN IF NOT EXISTS payment_method VARCHAR(32) DEFAULT 'bitcoin',
+    ADD COLUMN IF NOT EXISTS currency VARCHAR(8) DEFAULT 'BTC',
+    ADD COLUMN IF NOT EXISTS promo_code VARCHAR(64),
+    ADD COLUMN IF NOT EXISTS payment_reference VARCHAR(255),
+    ADD COLUMN IF NOT EXISTS confirmed_at TIMESTAMP,
+    ADD COLUMN IF NOT EXISTS cancelled_at TIMESTAMP;
