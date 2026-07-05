@@ -23,6 +23,7 @@ type invoiceRequest struct {
 	PaymentMethod string  `json:"payment_method,omitempty"`
 	Currency      string  `json:"currency,omitempty"`
 	PromoCode     string  `json:"promo_code,omitempty"`
+	IsTest        bool    `json:"is_test,omitempty"`
 }
 
 type invoiceResponse struct {
@@ -35,6 +36,7 @@ type invoiceResponse struct {
 	Currency      string  `json:"currency"`
 	PromoCode     string  `json:"promo_code,omitempty"`
 	Status        string  `json:"status"`
+	IsTest        bool    `json:"is_test"`
 	ExpiresAt     string  `json:"expires_at"`
 }
 
@@ -120,6 +122,67 @@ func (h *PaymentHandler) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 		Currency:      currency,
 		PromoCode:     promoCode,
 		Status:        invoice.Status,
+		IsTest:        req.IsTest,
+		ExpiresAt:     invoice.ExpiresAt.Format(time.RFC3339),
+	}, http.StatusCreated)
+}
+
+func (h *PaymentHandler) CreateTestInvoice(w http.ResponseWriter, r *http.Request) {
+	keyStr := r.Header.Get("X-API-Key")
+	apiKey, err := h.storage.GetAPIKey(keyStr)
+	if err != nil {
+		jsonError(w, "unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	var req invoiceRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.AmountUSD <= 0 {
+		jsonError(w, "invalid amount", http.StatusBadRequest)
+		return
+	}
+	req.IsTest = true
+
+	paymentMethod := normalizePaymentMethod(req.PaymentMethod)
+	currency := strings.ToUpper(strings.TrimSpace(req.Currency))
+	if currency == "" {
+		currency = "BTC"
+	}
+	if paymentMethod == "" {
+		paymentMethod = "bitcoin"
+	}
+
+	btcPrice, err := getBTCPrice()
+	if err != nil {
+		jsonError(w, "failed to fetch exchange rate", http.StatusInternalServerError)
+		return
+	}
+
+	btcAmount := req.AmountUSD / btcPrice
+	addr, err := h.storage.GetRandomFreeAddress()
+	if err != nil {
+		jsonError(w, "no addresses available", http.StatusServiceUnavailable)
+		return
+	}
+
+	invoice, err := h.storage.CreateInvoiceWithDetails(apiKey.UserID, addr, req.AmountUSD, btcAmount, paymentMethod, currency, "", "")
+	if err != nil {
+		log.Printf("CRITICAL DATABASE ERROR in CreateTestInvoice: %v", err)
+		jsonError(w, "database error", http.StatusInternalServerError)
+		return
+	}
+
+	_ = h.storage.AddPaymentEvent(invoice.ID, "test_created", fmt.Sprintf("payment_method=%s", paymentMethod))
+
+	jsonResponse(w, invoiceResponse{
+		ID:            invoice.ID,
+		Address:       invoice.Address,
+		AmountBTC:     invoice.AmountBTC,
+		AmountUSD:     invoice.AmountUSD,
+		AmountPayable: req.AmountUSD,
+		PaymentMethod: paymentMethod,
+		Currency:      currency,
+		Status:        invoice.Status,
+		IsTest:        true,
 		ExpiresAt:     invoice.ExpiresAt.Format(time.RFC3339),
 	}, http.StatusCreated)
 }

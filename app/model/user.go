@@ -29,6 +29,7 @@ type Invoice struct {
 	Currency      string     `json:"currency"`
 	PromoCode     string     `json:"promo_code,omitempty"`
 	PaymentRef    string     `json:"payment_reference,omitempty"`
+	IsTest        bool       `json:"is_test"`
 	CreatedAt     time.Time  `json:"created_at"`
 	ExpiresAt     time.Time  `json:"expires_at"`
 	ConfirmedAt   *time.Time `json:"confirmed_at,omitempty"`

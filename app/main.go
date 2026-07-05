@@ -53,6 +53,7 @@ func main() {
 
 	// CORS снаружи, Auth внутри — оба работают
 	http.HandleFunc("/payments/create", corsMiddleware(authMiddleware.Authenticate(paymentHandler.CreateInvoice)))
+	http.HandleFunc("/payments/test-create", corsMiddleware(authMiddleware.Authenticate(paymentHandler.CreateTestInvoice)))
 	http.HandleFunc("/payments/cancel", corsMiddleware(authMiddleware.Authenticate(paymentHandler.CancelInvoice)))
 	http.HandleFunc("/payments/promos/create", corsMiddleware(authMiddleware.Authenticate(paymentHandler.CreatePromoCode)))
 	http.HandleFunc("/screenshot", corsMiddleware(authMiddleware.Authenticate(screenshotHandler)))

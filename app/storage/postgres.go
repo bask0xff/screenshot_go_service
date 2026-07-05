@@ -166,10 +166,10 @@ func (s *Storage) CreateInvoiceWithDetails(userID int, address string, usdAmount
 	invoice := &model.Invoice{}
 	expiresAt := time.Now().Add(3 * time.Hour)
 	err := s.db.QueryRow(`
-		INSERT INTO btc_invoices (user_id, address, amount_usd, amount_btc, status, payment_method, currency, promo_code, payment_reference, expires_at)
-		VALUES ($1, $2, $3, $4, 'pending', $5, $6, $7, $8, $9)
-		RETURNING id, user_id, address, amount_usd, amount_btc, status, payment_method, currency, promo_code, payment_reference, created_at, expires_at
-	`, userID, address, usdAmount, btcAmount, paymentMethod, currency, promoCode, paymentRef, expiresAt).Scan(
+		INSERT INTO btc_invoices (user_id, address, amount_usd, amount_btc, status, payment_method, currency, promo_code, payment_reference, is_test, expires_at)
+		VALUES ($1, $2, $3, $4, 'pending', $5, $6, $7, $8, $9, $10)
+		RETURNING id, user_id, address, amount_usd, amount_btc, status, payment_method, currency, promo_code, payment_reference, is_test, created_at, expires_at
+	`, userID, address, usdAmount, btcAmount, paymentMethod, currency, promoCode, paymentRef, false, expiresAt).Scan(
 		&invoice.ID,
 		&invoice.UserID,
 		&invoice.Address,
@@ -180,6 +180,7 @@ func (s *Storage) CreateInvoiceWithDetails(userID int, address string, usdAmount
 		&invoice.Currency,
 		&invoice.PromoCode,
 		&invoice.PaymentRef,
+		&invoice.IsTest,
 		&invoice.CreatedAt,
 		&invoice.ExpiresAt,
 	)
@@ -189,7 +190,7 @@ func (s *Storage) CreateInvoiceWithDetails(userID int, address string, usdAmount
 func (s *Storage) GetInvoiceByAddress(address string) (*model.Invoice, error) {
 	invoice := &model.Invoice{}
 	err := s.db.QueryRow(`
-		SELECT id, user_id, address, amount_usd, amount_btc, status, payment_method, currency, promo_code, payment_reference, created_at, expires_at, confirmed_at, cancelled_at
+		SELECT id, user_id, address, amount_usd, amount_btc, status, payment_method, currency, promo_code, payment_reference, is_test, created_at, expires_at, confirmed_at, cancelled_at
 		FROM btc_invoices WHERE address = $1
 	`, address).Scan(
 		&invoice.ID,
@@ -202,6 +203,7 @@ func (s *Storage) GetInvoiceByAddress(address string) (*model.Invoice, error) {
 		&invoice.Currency,
 		&invoice.PromoCode,
 		&invoice.PaymentRef,
+		&invoice.IsTest,
 		&invoice.CreatedAt,
 		&invoice.ExpiresAt,
 		&invoice.ConfirmedAt,
@@ -219,7 +221,7 @@ func (s *Storage) CancelInvoice(address string) error {
 
 func (s *Storage) ListPendingInvoices() ([]*model.Invoice, error) {
 	rows, err := s.db.Query(`
-		SELECT id, user_id, address, amount_usd, amount_btc, status, payment_method, currency, promo_code, payment_reference, created_at, expires_at, confirmed_at, cancelled_at
+		SELECT id, user_id, address, amount_usd, amount_btc, status, payment_method, currency, promo_code, payment_reference, is_test, created_at, expires_at, confirmed_at, cancelled_at
 		FROM btc_invoices WHERE status = 'pending' ORDER BY created_at DESC
 	`)
 	if err != nil {
@@ -241,6 +243,7 @@ func (s *Storage) ListPendingInvoices() ([]*model.Invoice, error) {
 			&invoice.Currency,
 			&invoice.PromoCode,
 			&invoice.PaymentRef,
+			&invoice.IsTest,
 			&invoice.CreatedAt,
 			&invoice.ExpiresAt,
 			&invoice.ConfirmedAt,
