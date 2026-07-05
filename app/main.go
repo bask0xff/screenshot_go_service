@@ -3,10 +3,12 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"screenshot-api/config"
 	"screenshot-api/handler"
@@ -59,6 +61,14 @@ func main() {
 	http.HandleFunc("/auth/register", corsMiddleware(authHandler.Register))
 	http.HandleFunc("/auth/login", corsMiddleware(authHandler.Login))
 	http.HandleFunc("/internal/confirm-payment", corsMiddleware(confirmPaymentHandler))
+
+	go func() {
+		for {
+			syncPendingBitcoinInvoices()
+			time.Sleep(30 * time.Second)
+		}
+	}()
+
 	log.Println("server started on :8082")
 	if err := http.ListenAndServe(":8082", nil); err != nil {
 		log.Fatalf("server error: %v", err)
@@ -190,14 +200,14 @@ func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
 
 func checkBitcoinPayment(address string, expectedBTC float64) (bool, error) {
 	if bitcoinRPCUser == "" || bitcoinRPCPass == "" {
-		return true, nil
+		return false, fmt.Errorf("bitcoin rpc is not configured")
 	}
 
 	payload := map[string]interface{}{
 		"jsonrpc": "1.0",
 		"id":      "curltext",
-		"method":  "listunspent",
-		"params":  []interface{}{1, 9999999, []interface{}{address}},
+		"method":  "listtransactions",
+		"params":  []interface{}{"*", 1000},
 	}
 	body, err := json.Marshal(payload)
 	if err != nil {
@@ -220,21 +230,54 @@ func checkBitcoinPayment(address string, expectedBTC float64) (bool, error) {
 
 	var rpcResp struct {
 		Result []struct {
-			Amount       float64 `json:"amount"`
+			Address       string  `json:"address"`
+			Amount        float64 `json:"amount"`
+			Category      string  `json:"category"`
 			Confirmations int     `json:"confirmations"`
-			Address      string  `json:"address"`
 		} `json:"result"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&rpcResp); err != nil {
 		return false, err
 	}
 
-	for _, utxo := range rpcResp.Result {
-		if utxo.Address == address && utxo.Confirmations >= 1 && utxo.Amount >= expectedBTC {
+	for _, tx := range rpcResp.Result {
+		if tx.Address == address && tx.Category == "receive" && tx.Confirmations >= 1 && tx.Amount >= expectedBTC {
 			return true, nil
 		}
 	}
 	return false, nil
+}
+
+func syncPendingBitcoinInvoices() {
+	if globalStore == nil {
+		return
+	}
+
+	invoices, err := globalStore.ListPendingInvoices()
+	if err != nil {
+		log.Printf("failed to list pending invoices: %v", err)
+		return
+	}
+
+	for _, invoice := range invoices {
+		confirmed, err := checkBitcoinPayment(invoice.Address, invoice.AmountBTC)
+		if err != nil {
+			log.Printf("bitcoin sync failed for %s: %v", invoice.Address, err)
+			continue
+		}
+		if !confirmed {
+			continue
+		}
+
+		userID, amountUSD, err := globalStore.ConfirmInvoice(invoice.Address)
+		if err != nil {
+			log.Printf("failed to confirm invoice %s: %v", invoice.Address, err)
+			continue
+		}
+		if err := globalStore.UpdateUserBalance(userID, amountUSD); err != nil {
+			log.Printf("failed to credit balance for invoice %s: %v", invoice.Address, err)
+		}
+	}
 }
 
 func init() {

@@ -217,6 +217,43 @@ func (s *Storage) CancelInvoice(address string) error {
 	return err
 }
 
+func (s *Storage) ListPendingInvoices() ([]*model.Invoice, error) {
+	rows, err := s.db.Query(`
+		SELECT id, user_id, address, amount_usd, amount_btc, status, payment_method, currency, promo_code, payment_reference, created_at, expires_at, confirmed_at, cancelled_at
+		FROM btc_invoices WHERE status = 'pending' ORDER BY created_at DESC
+	`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var invoices []*model.Invoice
+	for rows.Next() {
+		invoice := &model.Invoice{}
+		err := rows.Scan(
+			&invoice.ID,
+			&invoice.UserID,
+			&invoice.Address,
+			&invoice.AmountUSD,
+			&invoice.AmountBTC,
+			&invoice.Status,
+			&invoice.PaymentMethod,
+			&invoice.Currency,
+			&invoice.PromoCode,
+			&invoice.PaymentRef,
+			&invoice.CreatedAt,
+			&invoice.ExpiresAt,
+			&invoice.ConfirmedAt,
+			&invoice.CancelledAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		invoices = append(invoices, invoice)
+	}
+	return invoices, nil
+}
+
 func (s *Storage) CreatePromoCode(code string, discountPercent float64, maxUses int, expiresAt time.Time) (*model.PromoCode, error) {
 	promo := &model.PromoCode{}
 	err := s.db.QueryRow(`

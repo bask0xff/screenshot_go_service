@@ -42,7 +42,23 @@ curl "http://localhost:8082/screenshot?url=https://example.com" \
 curl -X POST http://localhost:8082/payments/create \
   -H "X-API-Key: <ваш_ключ>" \
   -H "Content-Type: application/json" \
-  -d '{"amount_usd": 5.00}'
+  -d '{"amount_usd": 5.00, "payment_method": "bitcoin", "promo_code": "WELCOME10"}'
+```
+
+### Отменить инвойс
+```bash
+curl -X POST http://localhost:8082/payments/cancel \
+  -H "X-API-Key: <ваш_ключ>" \
+  -H "Content-Type: application/json" \
+  -d '{"address": "<btc_address>"}'
+```
+
+### Создать промо-код
+```bash
+curl -X POST http://localhost:8082/payments/promos/create \
+  -H "X-API-Key: <ваш_ключ>" \
+  -H "Content-Type: application/json" \
+  -d '{"code": "WELCOME10", "discount_percent": 10, "max_uses": 100, "expires_at": "2030-01-01T00:00:00Z"}'
 ```
 
 ### Подтвердить платёж (внутренний роут)
@@ -50,6 +66,14 @@ curl -X POST http://localhost:8082/payments/create \
 curl -X POST "http://localhost:8082/internal/confirm-payment?address=<btc_address>"
 ```
 > ⚠️ В продакшене добавьте проверку `X-Internal-Secret` заголовка.
+
+### Переменные окружения для Bitcoin RPC
+```bash
+BITCOIN_RPC_USER=your_user
+BITCOIN_RPC_PASSWORD=your_password
+BITCOIN_RPC_HOST=127.0.0.1
+BITCOIN_RPC_PORT=8332
+```
 
 ## Порты
 | Сервис | Порт |

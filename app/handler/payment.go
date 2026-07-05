@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 	"screenshot-api/storage"
+	"strings"
 	"time"
 )
 
@@ -26,16 +26,16 @@ type invoiceRequest struct {
 }
 
 type invoiceResponse struct {
-	ID           int     `json:"id"`
-	Address      string  `json:"address"`
-	AmountBTC    float64 `json:"amount_btc"`
-	AmountUSD    float64 `json:"amount_usd"`
+	ID            int     `json:"id"`
+	Address       string  `json:"address"`
+	AmountBTC     float64 `json:"amount_btc"`
+	AmountUSD     float64 `json:"amount_usd"`
 	AmountPayable float64 `json:"amount_payable"`
-	PaymentMethod string `json:"payment_method"`
-	Currency     string  `json:"currency"`
-	PromoCode    string  `json:"promo_code,omitempty"`
-	Status       string  `json:"status"`
-	ExpiresAt    string  `json:"expires_at"`
+	PaymentMethod string  `json:"payment_method"`
+	Currency      string  `json:"currency"`
+	PromoCode     string  `json:"promo_code,omitempty"`
+	Status        string  `json:"status"`
+	ExpiresAt     string  `json:"expires_at"`
 }
 
 type cancelRequest struct {
@@ -111,16 +111,16 @@ func (h *PaymentHandler) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 	_ = h.storage.AddPaymentEvent(invoice.ID, "created", fmt.Sprintf("payment_method=%s", paymentMethod))
 
 	jsonResponse(w, invoiceResponse{
-		ID:           invoice.ID,
-		Address:      invoice.Address,
-		AmountBTC:    invoice.AmountBTC,
-		AmountUSD:    invoice.AmountUSD,
+		ID:            invoice.ID,
+		Address:       invoice.Address,
+		AmountBTC:     invoice.AmountBTC,
+		AmountUSD:     invoice.AmountUSD,
 		AmountPayable: payableAmount,
 		PaymentMethod: paymentMethod,
-		Currency:     currency,
-		PromoCode:    promoCode,
-		Status:       invoice.Status,
-		ExpiresAt:    invoice.ExpiresAt.Format(time.RFC3339),
+		Currency:      currency,
+		PromoCode:     promoCode,
+		Status:        invoice.Status,
+		ExpiresAt:     invoice.ExpiresAt.Format(time.RFC3339),
 	}, http.StatusCreated)
 }
 
