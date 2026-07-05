@@ -7,6 +7,11 @@ go mod init screenshot-api
 docker compose down
 docker compose up -d
 
+----
+delete DB data and new migrations:
+
+docker compose down -v
+docker compose up -d --build
 
 ---
 new (clearing database and rebuilding):
