@@ -158,7 +158,7 @@ func confirmPaymentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	confirmed, err := checkBitcoinPayment(address, invoice.AmountBTC)
+	confirmed, err := checkBitcoinPayment(address, satoshisToBTC(invoice.Amount))
 	if err != nil {
 		log.Printf("bitcoin confirmation check failed: %v", err)
 		confirmed = false
@@ -169,13 +169,20 @@ func confirmPaymentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, amountUSD, err := globalStore.ConfirmInvoice(address)
+	btcPrice, err := getBTCPrice()
+	if err != nil {
+		log.Printf("failed to fetch exchange rate: %v", err)
+		http.Error(w, "failed to fetch exchange rate", http.StatusInternalServerError)
+		return
+	}
+
+	userID, amountSatoshi, err := globalStore.ConfirmInvoice(address)
 	if err != nil {
 		http.Error(w, "invoice not found or already confirmed", http.StatusNotFound)
 		return
 	}
 
-	if err := globalStore.UpdateUserBalance(userID, amountUSD); err != nil {
+	if err := globalStore.UpdateUserBalance(userID, satoshisToUSD(amountSatoshi, btcPrice)); err != nil {
 		http.Error(w, "failed to update balance", http.StatusInternalServerError)
 		return
 	}
@@ -261,7 +268,7 @@ func syncPendingBitcoinInvoices() {
 	}
 
 	for _, invoice := range invoices {
-		confirmed, err := checkBitcoinPayment(invoice.Address, invoice.AmountBTC)
+		confirmed, err := checkBitcoinPayment(invoice.Address, satoshisToBTC(invoice.Amount))
 		if err != nil {
 			log.Printf("bitcoin sync failed for %s: %v", invoice.Address, err)
 			continue
@@ -270,12 +277,12 @@ func syncPendingBitcoinInvoices() {
 			continue
 		}
 
-		userID, amountUSD, err := globalStore.ConfirmInvoice(invoice.Address)
+		userID, amountSatoshi, err := globalStore.ConfirmInvoice(invoice.Address)
 		if err != nil {
 			log.Printf("failed to confirm invoice %s: %v", invoice.Address, err)
 			continue
 		}
-		if err := globalStore.UpdateUserBalance(userID, amountUSD); err != nil {
+		if err := globalStore.UpdateUserBalance(userID, satoshisToUSD(amountSatoshi, 1)); err != nil {
 			log.Printf("failed to credit balance for invoice %s: %v", invoice.Address, err)
 		}
 	}

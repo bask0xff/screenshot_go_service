@@ -151,32 +151,30 @@ func (s *Storage) CreateInvoice(userID int, address string, usdAmount, btcAmount
 	return err
 }
 
-func (s *Storage) ConfirmInvoice(address string) (int, float64, error) {
+func (s *Storage) ConfirmInvoice(address string) (int, int64, error) {
 	var userID int
-	var amountUSD float64
+	var amountSatoshi int64
 	query := `
 		UPDATE btc_invoices 
 		SET status = 'confirmed', confirmed_at = NOW()
 		WHERE address = $1 AND status = 'pending'
-		RETURNING user_id, amount_usd`
-	err := s.db.QueryRow(query, address).Scan(&userID, &amountUSD)
-	return userID, amountUSD, err
+		RETURNING user_id, amount_satoshi`
+	err := s.db.QueryRow(query, address).Scan(&userID, &amountSatoshi)
+	return userID, amountSatoshi, err
 }
 
-func (s *Storage) CreateInvoiceWithDetails(userID int, address string, usdAmount, btcAmount float64, amountSatoshi int64, paymentMethod, currency, promoCode, paymentRef string, isTest bool) (*model.Invoice, error) {
+func (s *Storage) CreateInvoiceWithDetails(userID int, address string, amountSatoshi int64, paymentMethod, currency, promoCode, paymentRef string, isTest bool) (*model.Invoice, error) {
 	invoice := &model.Invoice{}
 	expiresAt := time.Now().Add(3 * time.Hour)
 	err := s.db.QueryRow(`
-		INSERT INTO btc_invoices (user_id, address, amount_usd, amount_btc, amount_satoshi, status, payment_method, currency, promo_code, payment_reference, is_test, expires_at)
-		VALUES ($1, $2, $3, $4, $5, 'pending', $6, $7, $8, $9, $10, $11)
-		RETURNING id, user_id, address, amount_usd, amount_btc, amount_satoshi, status, payment_method, currency, promo_code, payment_reference, is_test, created_at, expires_at
-	`, userID, address, usdAmount, btcAmount, amountSatoshi, paymentMethod, currency, promoCode, paymentRef, isTest, expiresAt).Scan(
+		INSERT INTO btc_invoices (user_id, address, amount_satoshi, status, payment_method, currency, promo_code, payment_reference, is_test, expires_at)
+		VALUES ($1, $2, $3, 'pending', $4, $5, $6, $7, $8, $9)
+		RETURNING id, user_id, address, amount_satoshi, status, payment_method, currency, promo_code, payment_reference, is_test, created_at, expires_at
+	`, userID, address, amountSatoshi, paymentMethod, currency, promoCode, paymentRef, isTest, expiresAt).Scan(
 		&invoice.ID,
 		&invoice.UserID,
 		&invoice.Address,
-		&invoice.AmountUSD,
-		&invoice.AmountBTC,
-		&invoice.AmountSatoshi,
+		&invoice.Amount,
 		&invoice.Status,
 		&invoice.PaymentMethod,
 		&invoice.Currency,
@@ -192,15 +190,13 @@ func (s *Storage) CreateInvoiceWithDetails(userID int, address string, usdAmount
 func (s *Storage) GetInvoiceByAddress(address string) (*model.Invoice, error) {
 	invoice := &model.Invoice{}
 	err := s.db.QueryRow(`
-		SELECT id, user_id, address, amount_usd, amount_btc, amount_satoshi, status, payment_method, currency, promo_code, payment_reference, is_test, created_at, expires_at, confirmed_at, cancelled_at
+		SELECT id, user_id, address, amount_satoshi, status, payment_method, currency, promo_code, payment_reference, is_test, created_at, expires_at, confirmed_at, cancelled_at
 		FROM btc_invoices WHERE address = $1
 	`, address).Scan(
 		&invoice.ID,
 		&invoice.UserID,
 		&invoice.Address,
-		&invoice.AmountUSD,
-		&invoice.AmountBTC,
-		&invoice.AmountSatoshi,
+		&invoice.Amount,
 		&invoice.Status,
 		&invoice.PaymentMethod,
 		&invoice.Currency,
@@ -224,7 +220,7 @@ func (s *Storage) CancelInvoice(address string) error {
 
 func (s *Storage) ListPendingInvoices() ([]*model.Invoice, error) {
 	rows, err := s.db.Query(`
-		SELECT id, user_id, address, amount_usd, amount_btc, amount_satoshi, status, payment_method, currency, promo_code, payment_reference, is_test, created_at, expires_at, confirmed_at, cancelled_at
+		SELECT id, user_id, address, amount_satoshi, status, payment_method, currency, promo_code, payment_reference, is_test, created_at, expires_at, confirmed_at, cancelled_at
 		FROM btc_invoices WHERE status = 'pending' ORDER BY created_at DESC
 	`)
 	if err != nil {
@@ -239,9 +235,7 @@ func (s *Storage) ListPendingInvoices() ([]*model.Invoice, error) {
 			&invoice.ID,
 			&invoice.UserID,
 			&invoice.Address,
-			&invoice.AmountUSD,
-			&invoice.AmountBTC,
-			&invoice.AmountSatoshi,
+			&invoice.Amount,
 			&invoice.Status,
 			&invoice.PaymentMethod,
 			&invoice.Currency,

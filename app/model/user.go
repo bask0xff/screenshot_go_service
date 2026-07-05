@@ -22,9 +22,7 @@ type Invoice struct {
 	ID            int        `json:"id"`
 	UserID        int        `json:"user_id"`
 	Address       string     `json:"address"`
-	AmountUSD     float64    `json:"amount_usd"`
-	AmountBTC     float64    `json:"amount_btc"`
-	AmountSatoshi int64      `json:"amount_satoshi"`
+	Amount        int64      `json:"amount"`
 	Status        string     `json:"status"`
 	PaymentMethod string     `json:"payment_method"`
 	Currency      string     `json:"currency"`
