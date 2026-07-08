@@ -15,7 +15,7 @@ docker compose up -d --build
 
 ## API
 
-### Регистрация
+### Registration
 ```bash
 curl -X POST http://localhost:8082/auth/register \
   -H "Content-Type: application/json" \
