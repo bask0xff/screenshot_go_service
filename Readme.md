@@ -6,7 +6,7 @@
 
 ```bash
 cp .env.example .env
-# Отредактируйте .env — заполните токены и пароли
+# Edit .env — fill the tokens and passwords
 
 docker compose up -d --build
 ```
