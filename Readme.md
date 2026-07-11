@@ -23,7 +23,7 @@ curl -X POST http://localhost:8082/auth/register \
 ```
 Ответ содержит `api_key.key` — сохраните его.
 
-### Авторизация (получить ключ повторно)
+### Auth (получить ключ повторно)
 ```bash
 curl -X POST http://localhost:8082/auth/login \
   -H "Content-Type: application/json" \
@@ -53,7 +53,7 @@ curl -X POST http://localhost:8082/payments/cancel \
   -d '{"address": "<btc_address>"}'
 ```
 
-### Создать промо-код
+### Create PROMO-CODE
 ```bash
 curl -X POST http://localhost:8082/payments/promos/create \
   -H "X-API-Key: <ваш_ключ>" \
