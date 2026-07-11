@@ -30,7 +30,7 @@ curl -X POST http://localhost:8082/auth/login \
   -d '{"email":"user@example.com","password":"secret"}'
 ```
 
-### Скриншот
+### Screenshot
 ```bash
 curl "http://localhost:8082/screenshot?url=https://example.com" \
   -H "X-API-Key: <ваш_ключ>" \
