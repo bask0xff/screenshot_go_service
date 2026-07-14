@@ -45,7 +45,7 @@ curl -X POST http://localhost:8082/payments/create \
   -d '{"amount_usd": 5.00, "payment_method": "bitcoin", "promo_code": "WELCOME10"}'
 ```
 
-### Отменить инвойс
+### Cancel payment
 ```bash
 curl -X POST http://localhost:8082/payments/cancel \
   -H "X-API-Key: <ваш_ключ>" \
