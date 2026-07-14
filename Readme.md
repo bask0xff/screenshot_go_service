@@ -75,8 +75,8 @@ BITCOIN_RPC_HOST=127.0.0.1
 BITCOIN_RPC_PORT=8332
 ```
 
-## Порты
-| Сервис | Порт |
+## Ports
+| Service | Port |
 |---|---|
 | API | 8082 |
 | Browserless | 3002 |
