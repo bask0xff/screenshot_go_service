@@ -61,7 +61,7 @@ curl -X POST http://localhost:8082/payments/promos/create \
   -d '{"code": "WELCOME10", "discount_percent": 10, "max_uses": 100, "expires_at": "2030-01-01T00:00:00Z"}'
 ```
 
-### Подтвердить платёж (внутренний роут)
+### Confirm payment (внутренний роут)
 ```bash
 curl -X POST "http://localhost:8082/internal/confirm-payment?address=<btc_address>"
 ```
