@@ -2,11 +2,11 @@
 
 Сервис для создания скриншотов веб-страниц с авторизацией по API-ключам и оплатой через Bitcoin.
 
-## Быстрый старт
+## Quick start
 
 ```bash
 cp .env.example .env
-# Отредактируйте .env — заполните токены и пароли
+# Edit .env — fill the tokens and passwords
 
 docker compose up -d --build
 ```
@@ -15,7 +15,7 @@ docker compose up -d --build
 
 ## API
 
-### Регистрация
+### Registration
 ```bash
 curl -X POST http://localhost:8082/auth/register \
   -H "Content-Type: application/json" \
@@ -23,14 +23,14 @@ curl -X POST http://localhost:8082/auth/register \
 ```
 Ответ содержит `api_key.key` — сохраните его.
 
-### Авторизация (получить ключ повторно)
+### Auth (получить ключ повторно)
 ```bash
 curl -X POST http://localhost:8082/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"user@example.com","password":"secret"}'
 ```
 
-### Скриншот
+### Screenshot
 ```bash
 curl "http://localhost:8082/screenshot?url=https://example.com" \
   -H "X-API-Key: <ваш_ключ>" \
@@ -45,7 +45,7 @@ curl -X POST http://localhost:8082/payments/create \
   -d '{"amount_usd": 5.00, "payment_method": "bitcoin", "promo_code": "WELCOME10"}'
 ```
 
-### Отменить инвойс
+### Cancel payment
 ```bash
 curl -X POST http://localhost:8082/payments/cancel \
   -H "X-API-Key: <ваш_ключ>" \
@@ -53,7 +53,7 @@ curl -X POST http://localhost:8082/payments/cancel \
   -d '{"address": "<btc_address>"}'
 ```
 
-### Создать промо-код
+### Create PROMO-CODE
 ```bash
 curl -X POST http://localhost:8082/payments/promos/create \
   -H "X-API-Key: <ваш_ключ>" \
@@ -61,7 +61,7 @@ curl -X POST http://localhost:8082/payments/promos/create \
   -d '{"code": "WELCOME10", "discount_percent": 10, "max_uses": 100, "expires_at": "2030-01-01T00:00:00Z"}'
 ```
 
-### Подтвердить платёж (внутренний роут)
+### Confirm payment (внутренний роут)
 ```bash
 curl -X POST "http://localhost:8082/internal/confirm-payment?address=<btc_address>"
 ```
@@ -75,8 +75,8 @@ BITCOIN_RPC_HOST=127.0.0.1
 BITCOIN_RPC_PORT=8332
 ```
 
-## Порты
-| Сервис | Порт |
+## Ports
+| Service | Port |
 |---|---|
 | API | 8082 |
 | Browserless | 3002 |
