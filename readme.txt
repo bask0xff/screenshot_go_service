@@ -1,6 +1,14 @@
 # https://claude.ai/chat/7dc2da72-b602-4eb4-99db-c1ccf034bf27
 
+# Add .env file:
+BROWSERLESS_TOKEN=<password>
+POSTGRES_DB=<your_database_name>
+POSTGRES_USER=<user>
+POSTGRES_PASSWORD=<password>
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
 
+------------------
 cd app
 go mod init screenshot-api
 
