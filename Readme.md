@@ -11,7 +11,7 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-Всё. API будет доступно на `http://localhost:8082`.
+That's all. API is available in `http://localhost:8082`.
 
 ## API
 
