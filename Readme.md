@@ -23,7 +23,7 @@ curl -X POST http://localhost:8082/auth/register \
 ```
 Ответ содержит `api_key.key` — сохраните его.
 
-### Auth (получить ключ повторно)
+### Auth (get the key again)
 ```bash
 curl -X POST http://localhost:8082/auth/login \
   -H "Content-Type: application/json" \
