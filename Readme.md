@@ -83,25 +83,25 @@ BITCOIN_RPC_PORT=8332
 | Browserless | 3002 |
 | PostgreSQL | 5433 |
 
-## Миграции
+## Migrations
 Запускаются автоматически при старте сервиса. Файлы находятся в `app/migrations/`.
 
 ## Тестирование
 Перед деплоем обязательно запускайте полный набор проверок.
 
-### Быстрый запуск тестов
+### Fast tests launch
 ```bash
 cd app
 go test ./...
 ```
 
-### Тесты промо-кодов
+### Promo codes tests
 ```bash
 cd app
 go test ./... -run Promo
 ```
 
-### Форматирование и сборка
+### Build
 ```bash
 cd app
 go fmt ./...
@@ -119,7 +119,7 @@ cd app
 - запуск всех тестов,
 - сборку проекта.
 
-## Структура проекта
+## Project's structure
 ```
 .
 ├── docker-compose.yaml
