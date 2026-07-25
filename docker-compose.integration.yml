@@ -1,0 +1,32 @@
+services:
+  postgres-integration:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: screenshot_integration
+      POSTGRES_USER: integration
+      POSTGRES_PASSWORD: integration
+    volumes:
+      - integration-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U integration -d screenshot_integration"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  integration-tests:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+      target: test
+    environment:
+      POSTGRES_HOST: postgres-integration
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: screenshot_integration
+      POSTGRES_USER: integration
+      POSTGRES_PASSWORD: integration
+    depends_on:
+      postgres-integration:
+        condition: service_healthy
+
+volumes:
+  integration-pgdata:

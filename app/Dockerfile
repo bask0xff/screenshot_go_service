@@ -8,6 +8,10 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o server .
 
+FROM builder AS test
+
+CMD ["go", "test", "-tags=integration", "-count=1", "-v", "./storage"]
+
 FROM alpine:latest
 
 RUN apk --no-cache add ca-certificates
