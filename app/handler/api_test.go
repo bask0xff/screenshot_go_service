@@ -80,6 +80,8 @@ func (s *memoryStore) CreateInvoiceWithDetails(userID int, address string, amoun
 	s.lastInvoice = i
 	return i, nil
 }
+
+func (s *memoryStore) CancelInvoice(string) error                { return nil }
 func (s *memoryStore) AddPaymentEvent(int, string, string) error { return nil }
 func (s *memoryStore) GetPromoCode(code string) (*model.PromoCode, error) {
 	p, ok := s.promos[code]

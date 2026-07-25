@@ -23,6 +23,7 @@ type PaymentStore interface {
 	GetCurrencyRate(code string, btcPrice float64) (*model.CurrencyRate, error)
 	GetRandomFreeAddress() (string, error)
 	CreateInvoiceWithDetails(userID int, address string, amountSatoshi int64, paymentMethod, currency, promoCode, paymentRef string, isTest bool) (*model.Invoice, error)
+	CancelInvoice(address string) error
 	AddPaymentEvent(invoiceID int, eventType, payload string) error
 	GetPromoCode(code string) (*model.PromoCode, error)
 	UsePromoCode(code string) error
