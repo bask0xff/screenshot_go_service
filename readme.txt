@@ -158,6 +158,19 @@ d:\Projects\2026\screenshot_go_service>
 
 ----------------------------
 
+25.07.2026
+PS D:\Projects\2026\screenshot_go_service\app> go test -count=1 ./...
+?       screenshot-api  [no test files]
+?       screenshot-api/config   [no test files]
+?       screenshot-api/middleware       [no test files]
+?       screenshot-api/model    [no test files]
+?       screenshot-api/storage  [no test files]
+ok      screenshot-api/handler  1.447s
+PS D:\Projects\2026\screenshot_go_service\app> go test -count=1 ./handler
+ok      screenshot-api/handler  1.148s
+PS D:\Projects\2026\screenshot_go_service\app> 
+
+
 
 
 
