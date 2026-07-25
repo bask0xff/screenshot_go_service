@@ -38,7 +38,7 @@ curl "http://localhost:8082/screenshot?url=https://example.com" \
   --output screenshot.png
 ```
 
-### Создать инвойс для пополнения баланса
+### Create invoice for top-up the balance
 ```bash
 curl -X POST http://localhost:8082/payments/create \
   -H "X-API-Key: <ваш_ключ>" \
@@ -68,7 +68,7 @@ curl -X POST "http://localhost:8082/internal/confirm-payment?address=<btc_addres
 ```
 > ⚠️ В продакшене добавьте проверку `X-Internal-Secret` заголовка.
 
-### Переменные окружения для Bitcoin RPC
+### Bitcoin RPC environment variables (.env)
 ```bash
 BITCOIN_RPC_USER=your_user
 BITCOIN_RPC_PASSWORD=your_password
