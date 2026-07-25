@@ -171,6 +171,55 @@ ok      screenshot-api/handler  1.148s
 PS D:\Projects\2026\screenshot_go_service\app> 
 
 
+PS D:\Projects\2026\screenshot_go_service\app> go test -v -count=1 ./handler
+=== RUN   TestRegisterAndLogin
+--- PASS: TestRegisterAndLogin (0.29s)
+=== RUN   TestLoginRejectsUnknownUser
+--- PASS: TestLoginRejectsUnknownUser (0.00s)
+=== RUN   TestCreatePromoCode
+--- PASS: TestCreatePromoCode (0.00s)
+=== RUN   TestCreateInvoiceForEachPaymentMethod
+=== RUN   TestCreateInvoiceForEachPaymentMethod/bitcoin
+=== RUN   TestCreateInvoiceForEachPaymentMethod/card
+=== RUN   TestCreateInvoiceForEachPaymentMethod/bank
+--- PASS: TestCreateInvoiceForEachPaymentMethod (0.00s)
+    --- PASS: TestCreateInvoiceForEachPaymentMethod/bitcoin (0.00s)
+    --- PASS: TestCreateInvoiceForEachPaymentMethod/card (0.00s)
+    --- PASS: TestCreateInvoiceForEachPaymentMethod/bank (0.00s)
+=== RUN   TestCreateInvoiceRejectsUnknownPaymentMethod
+--- PASS: TestCreateInvoiceRejectsUnknownPaymentMethod (0.00s)
+=== RUN   TestResolveInvoiceAmountsSupportsCustomCurrencyRate
+--- PASS: TestResolveInvoiceAmountsSupportsCustomCurrencyRate (0.00s)
+=== RUN   TestResolveInvoiceAmountsFallsBackToUSDWhenCurrencyMissing
+--- PASS: TestResolveInvoiceAmountsFallsBackToUSDWhenCurrencyMissing (0.00s)
+=== RUN   TestCalculateDiscountedAmount
+--- PASS: TestCalculateDiscountedAmount (0.00s)
+=== RUN   TestNormalizePaymentMethod
+--- PASS: TestNormalizePaymentMethod (0.00s)
+=== RUN   TestResolveInvoiceAmountsSupportsBTCAndUSD
+--- PASS: TestResolveInvoiceAmountsSupportsBTCAndUSD (0.00s)
+=== RUN   TestCalculateDiscountedAmountAppliesPromoPercentage
+--- PASS: TestCalculateDiscountedAmountAppliesPromoPercentage (0.00s)
+=== RUN   TestPromoCodeExpirationCheck
+--- PASS: TestPromoCodeExpirationCheck (0.00s)
+=== RUN   TestGeneratePromoCodeUsesUppercase12CharacterFormat
+--- PASS: TestGeneratePromoCodeUsesUppercase12CharacterFormat (0.00s)
+PASS
+ok      screenshot-api/handler  1.288s
+PS D:\Projects\2026\screenshot_go_service\app> 
+
+----
+Запустить один конкретный сценарий:
+go test -v -count=1 ./handler -run TestRegisterAndLogin
+go test -v -count=1 ./handler -run TestCreateInvoiceForEachPaymentMethod
+На каких данных тестируется:
+Пользователь: user@example.com, пароль secret; дополнительно проверяется неверный пароль.
+API-ключ: test-key.
+Промокод: SUMMER2026AA, скидка 15%, лимит 3.
+Платежи: сумма 2500 сатоши, валюта USD, методы bitcoin, card, bank.
+Курс BTC: фиксированный 50 000 USD.
+----
+
 
 
 
