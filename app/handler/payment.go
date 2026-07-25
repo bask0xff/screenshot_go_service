@@ -8,25 +8,39 @@ import (
 	"math/big"
 	"net/http"
 	"screenshot-api/model"
-	"screenshot-api/storage"
 	"strings"
 	"time"
 )
 
 type PaymentHandler struct {
-	storage *storage.Storage
+	storage  PaymentStore
+	btcPrice func() (float64, error)
 }
 
-func NewPaymentHandler(s *storage.Storage) *PaymentHandler {
-	return &PaymentHandler{storage: s}
+type PaymentStore interface {
+	GetAPIKey(key string) (*model.APIKey, error)
+	GetPaymentMethod(code string) (*model.PaymentMethod, error)
+	GetCurrencyRate(code string, btcPrice float64) (*model.CurrencyRate, error)
+	GetRandomFreeAddress() (string, error)
+	CreateInvoiceWithDetails(userID int, address string, amountSatoshi int64, paymentMethod, currency, promoCode, paymentRef string, isTest bool) (*model.Invoice, error)
+	AddPaymentEvent(invoiceID int, eventType, payload string) error
+	GetPromoCode(code string) (*model.PromoCode, error)
+	UsePromoCode(code string) error
+	CreatePromoCode(code string, discountPercent float64, maxUses int, expiresAt time.Time) (*model.PromoCode, error)
+}
+
+func NewPaymentHandler(s PaymentStore) *PaymentHandler {
+	return &PaymentHandler{storage: s, btcPrice: getBTCPrice}
 }
 
 type invoiceRequest struct {
-	Amount        int64  `json:"amount,omitempty"`
-	PaymentMethod string `json:"payment_method,omitempty"`
-	Currency      string `json:"currency,omitempty"`
-	PromoCode     string `json:"promo_code,omitempty"`
-	IsTest        bool   `json:"is_test,omitempty"`
+	Amount        int64   `json:"amount,omitempty"` // Amount in satoshis.
+	AmountUSD     float64 `json:"amount_usd,omitempty"`
+	AmountBTC     float64 `json:"amount_btc,omitempty"`
+	PaymentMethod string  `json:"payment_method,omitempty"`
+	Currency      string  `json:"currency,omitempty"`
+	PromoCode     string  `json:"promo_code,omitempty"`
+	IsTest        bool    `json:"is_test,omitempty"`
 }
 
 type invoiceResponse struct {
@@ -75,7 +89,12 @@ func (h *PaymentHandler) CreateInvoice(w http.ResponseWriter, r *http.Request) {
 		paymentMethod = "bitcoin"
 	}
 
-	btcPrice, err := getBTCPrice()
+	if _, err := h.storage.GetPaymentMethod(paymentMethod); err != nil {
+		jsonError(w, "unsupported payment method", http.StatusBadRequest)
+		return
+	}
+
+	btcPrice, err := h.btcPrice()
 	if err != nil {
 		jsonError(w, "failed to fetch exchange rate", http.StatusInternalServerError)
 		return
@@ -165,7 +184,12 @@ func (h *PaymentHandler) CreateTestInvoice(w http.ResponseWriter, r *http.Reques
 		paymentMethod = "bitcoin"
 	}
 
-	btcPrice, err := getBTCPrice()
+	if _, err := h.storage.GetPaymentMethod(paymentMethod); err != nil {
+		jsonError(w, "unsupported payment method", http.StatusBadRequest)
+		return
+	}
+
+	btcPrice, err := h.btcPrice()
 	if err != nil {
 		jsonError(w, "failed to fetch exchange rate", http.StatusInternalServerError)
 		return
@@ -283,6 +307,12 @@ func resolveInvoiceAmounts(req invoiceRequest, btcPrice float64, rate *model.Cur
 	if req.Amount > 0 {
 		amountSatoshi = req.Amount
 		return
+	}
+	if req.AmountBTC > 0 {
+		return int64(req.AmountBTC * 100000000), currency, nil
+	}
+	if req.AmountUSD > 0 && btcPrice > 0 {
+		return int64(req.AmountUSD / btcPrice * 100000000), currency, nil
 	}
 
 	return 0, currency, fmt.Errorf("invalid amount")

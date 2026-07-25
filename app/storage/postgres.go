@@ -145,8 +145,10 @@ func (s *Storage) GetRandomFreeAddress() (string, error) {
 func (s *Storage) CreateInvoice(userID int, address string, usdAmount, btcAmount float64) error {
 	expiresAt := time.Now().Add(3 * time.Hour)
 	query := `
-		INSERT INTO btc_invoices (user_id, address, amount_usd, amount_btc, amount_satoshi, status, expires_at)
-		VALUES ($1, $2, $3, $4, 0, 'pending', $5)`
+		INSERT INTO btc_invoices (user_id, address, amount_usd, amount_btc, amount_satoshi, status, payment_method_id, currency_id, expires_at)
+		VALUES ($1, $2, $3, $4, 0, 'pending',
+		        (SELECT id FROM payment_methods WHERE code = 'bitcoin'),
+		        (SELECT id FROM currencies WHERE code = 'USD'), $5)`
 	_, err := s.db.Exec(query, userID, address, usdAmount, btcAmount, expiresAt)
 	return err
 }
@@ -167,9 +169,18 @@ func (s *Storage) CreateInvoiceWithDetails(userID int, address string, amountSat
 	invoice := &model.Invoice{}
 	expiresAt := time.Now().Add(3 * time.Hour)
 	err := s.db.QueryRow(`
-		INSERT INTO btc_invoices (user_id, address, amount_usd, amount_btc, amount_satoshi, status, payment_method, currency, promo_code, payment_reference, is_test, expires_at)
-		VALUES ($1, $2, 0.0, 0.0, $3, 'pending', $4, $5, $6, $7, $8, $9)
-		RETURNING id, user_id, address, amount_satoshi, status, payment_method, currency, promo_code, payment_reference, is_test, created_at, expires_at
+		WITH created AS (
+			INSERT INTO btc_invoices (user_id, address, amount_usd, amount_btc, amount_satoshi, status, payment_method_id, currency_id, promo_code, payment_reference, is_test, expires_at)
+			VALUES ($1, $2, 0.0, 0.0, $3, 'pending',
+				(SELECT id FROM payment_methods WHERE code = $4 AND is_active),
+				(SELECT id FROM currencies WHERE code = $5 AND is_active), $6, $7, $8, $9)
+			RETURNING *
+		)
+		SELECT i.id, i.user_id, i.address, i.amount_satoshi, i.status, pm.code, c.code,
+		       i.promo_code, i.payment_reference, i.is_test, i.created_at, i.expires_at
+		FROM created i
+		JOIN payment_methods pm ON pm.id = i.payment_method_id
+		JOIN currencies c ON c.id = i.currency_id
 	`, userID, address, amountSatoshi, paymentMethod, currency, promoCode, paymentRef, isTest, expiresAt).Scan(
 		&invoice.ID,
 		&invoice.UserID,
@@ -190,8 +201,11 @@ func (s *Storage) CreateInvoiceWithDetails(userID int, address string, amountSat
 func (s *Storage) GetInvoiceByAddress(address string) (*model.Invoice, error) {
 	invoice := &model.Invoice{}
 	err := s.db.QueryRow(`
-		SELECT id, user_id, address, amount_satoshi, status, payment_method, currency, promo_code, payment_reference, is_test, created_at, expires_at, confirmed_at, cancelled_at
-		FROM btc_invoices WHERE address = $1
+		SELECT i.id, i.user_id, i.address, i.amount_satoshi, i.status, pm.code, c.code, i.promo_code, i.payment_reference, i.is_test, i.created_at, i.expires_at, i.confirmed_at, i.cancelled_at
+		FROM btc_invoices i
+		JOIN payment_methods pm ON pm.id = i.payment_method_id
+		JOIN currencies c ON c.id = i.currency_id
+		WHERE i.address = $1
 	`, address).Scan(
 		&invoice.ID,
 		&invoice.UserID,
@@ -220,8 +234,11 @@ func (s *Storage) CancelInvoice(address string) error {
 
 func (s *Storage) ListPendingInvoices() ([]*model.Invoice, error) {
 	rows, err := s.db.Query(`
-		SELECT id, user_id, address, amount_satoshi, status, payment_method, currency, promo_code, payment_reference, is_test, created_at, expires_at, confirmed_at, cancelled_at
-		FROM btc_invoices WHERE status = 'pending' ORDER BY created_at DESC
+		SELECT i.id, i.user_id, i.address, i.amount_satoshi, i.status, pm.code, c.code, i.promo_code, i.payment_reference, i.is_test, i.created_at, i.expires_at, i.confirmed_at, i.cancelled_at
+		FROM btc_invoices i
+		JOIN payment_methods pm ON pm.id = i.payment_method_id
+		JOIN currencies c ON c.id = i.currency_id
+		WHERE i.status = 'pending' ORDER BY i.created_at DESC
 	`)
 	if err != nil {
 		return nil, err
@@ -260,8 +277,18 @@ func (s *Storage) GetCurrencyRate(code string, btcPrice float64) (*model.Currenc
 	if normalized == "" {
 		normalized = "USD"
 	}
+	if normalized == "XBT" {
+		normalized = "BTC"
+	}
+	var active bool
+	if err := s.db.QueryRow(`SELECT is_active FROM currencies WHERE code = $1`, normalized).Scan(&active); err != nil {
+		return nil, err
+	}
+	if !active {
+		return nil, fmt.Errorf("currency %s is inactive", normalized)
+	}
 
-	if normalized == "BTC" || normalized == "XBT" {
+	if normalized == "BTC" {
 		return &model.CurrencyRate{CurrencyCode: normalized, RateToUSD: btcPrice, RateToSatoshi: 100000000}, nil
 	}
 	if normalized == "USD" || normalized == "USDT" {
@@ -283,14 +310,18 @@ func (s *Storage) GetCurrencyRate(code string, btcPrice float64) (*model.Currenc
 		return nil, err
 	}
 
-	if _, err := s.db.Exec(`INSERT INTO currencies (code, name, is_crypto, is_active) VALUES ($1, $2, false, true) ON CONFLICT (code) DO NOTHING`, normalized, normalized); err != nil {
-		return nil, err
-	}
-	if _, err := s.db.Exec(`INSERT INTO currency_rates (currency_code, rate_to_usd, rate_to_satoshi, effective_at) SELECT $1, 1.0, 0, NOW() WHERE NOT EXISTS (SELECT 1 FROM currency_rates WHERE currency_code = $1)`, normalized); err != nil {
-		return nil, err
-	}
+	return nil, fmt.Errorf("currency rate for %s is not configured", normalized)
+}
 
-	return &model.CurrencyRate{CurrencyCode: normalized, RateToUSD: 1, RateToSatoshi: 0}, nil
+func (s *Storage) GetPaymentMethod(code string) (*model.PaymentMethod, error) {
+	method := &model.PaymentMethod{}
+	err := s.db.QueryRow(`
+		SELECT id, code, name, is_active, created_at
+		FROM payment_methods WHERE code = $1 AND is_active
+	`, strings.ToLower(strings.TrimSpace(code))).Scan(
+		&method.ID, &method.Code, &method.Name, &method.IsActive, &method.CreatedAt,
+	)
+	return method, err
 }
 
 func (s *Storage) CreatePromoCode(code string, discountPercent float64, maxUses int, expiresAt time.Time) (*model.PromoCode, error) {

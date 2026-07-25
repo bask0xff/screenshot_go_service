@@ -8,14 +8,20 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	"screenshot-api/model"
-	"screenshot-api/storage"
 )
 
 type AuthHandler struct {
-	storage *storage.Storage
+	storage AuthStore
 }
 
-func NewAuthHandler(s *storage.Storage) *AuthHandler {
+type AuthStore interface {
+	CreateUser(email, passwordHash string) (*model.User, error)
+	CreateAPIKey(userID int) (*model.APIKey, error)
+	GetUserByEmail(email string) (*model.User, error)
+	GetAPIKeyByUserID(userID int) (*model.APIKey, error)
+}
+
+func NewAuthHandler(s AuthStore) *AuthHandler {
 	return &AuthHandler{storage: s}
 }
 
