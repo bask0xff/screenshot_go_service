@@ -4,13 +4,15 @@ package storage
 
 import (
 	"database/sql"
+	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"screenshot-api/config"
 )
 
-func TestMigrationsNormalizeInvoicePaymentReferences(t *testing.T) {
+func TestMigrationsNormalizeInvoicePaymentReferencesAndPromoCodes(t *testing.T) {
 	cfg := &config.Config{
 		DBHost:     "postgres-integration",
 		DBPort:     "5432",
@@ -42,22 +44,43 @@ func TestMigrationsNormalizeInvoicePaymentReferences(t *testing.T) {
 		}
 	}
 
-	user, err := store.CreateUser("integration@example.com", "password-hash")
+	uniqueID := time.Now().UnixNano()
+	user, err := store.CreateUser(fmt.Sprintf("integration-%d@example.com", uniqueID), "password-hash")
 	if err != nil {
 		t.Fatalf("create user: %v", err)
 	}
-	invoice, err := store.CreateInvoiceWithDetails(user.ID, "integration-address", 2500, "card", "USD", "", "", false)
+
+	promoCode := fmt.Sprintf("INTG%08d", uniqueID%100000000)
+	promo, err := store.CreatePromoCode(promoCode, 15, 3, time.Now().Add(time.Hour))
+	if err != nil {
+		t.Fatalf("create promo code: %v", err)
+	}
+	if promo.Code != promoCode || promo.DiscountPercent != 15 || promo.MaxUses != 3 || promo.UsedCount != 0 {
+		t.Fatalf("unexpected created promo code: %#v", promo)
+	}
+	if err := store.UsePromoCode(promoCode); err != nil {
+		t.Fatalf("use promo code: %v", err)
+	}
+	promo, err = store.GetPromoCode(promoCode)
+	if err != nil {
+		t.Fatalf("get promo code: %v", err)
+	}
+	if promo.UsedCount != 1 {
+		t.Fatalf("expected promo code usage count 1, got %d", promo.UsedCount)
+	}
+
+	invoice, err := store.CreateInvoiceWithDetails(user.ID, fmt.Sprintf("integration-address-%d", uniqueID), 2500, "card", "USD", promoCode, "", false)
 	if err != nil {
 		t.Fatalf("create invoice with reference keys: %v", err)
 	}
-	if invoice.PaymentMethod != "card" || invoice.Currency != "USD" {
-		t.Fatalf("unexpected invoice references: method=%q currency=%q", invoice.PaymentMethod, invoice.Currency)
+	if invoice.PaymentMethod != "card" || invoice.Currency != "USD" || invoice.PromoCode != promoCode {
+		t.Fatalf("unexpected invoice data: method=%q currency=%q promo=%q", invoice.PaymentMethod, invoice.Currency, invoice.PromoCode)
 	}
 
 	_, err = store.db.Exec(`
 		INSERT INTO btc_invoices (user_id, address, expires_at, payment_method_id, currency_id)
-		VALUES ($1, 'invalid-reference', NOW(), 999999, 999999)
-	`, user.ID)
+		VALUES ($1, $2, NOW(), 999999, 999999)
+	`, user.ID, fmt.Sprintf("invalid-reference-%d", uniqueID))
 	if err == nil {
 		t.Fatal("invoice with nonexistent reference IDs was accepted")
 	}
