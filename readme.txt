@@ -246,6 +246,58 @@ docker compose -p screenshot-go-integration -f docker-compose.integration.yml do
 Чтобы повторить миграции с чистого состояния, всегда выполняйте down -v перед следующим запуском.
 -----------------
 
+Первый запуск действительно не прошёл: тест не находил каталог миграций. Я исправил это и повторно выполнил тест на чистой изолированной PostgreSQL.
+Результат фактического прогона:
+=== RUN   TestMigrationsNormalizeInvoicePaymentReferences
+--- PASS: TestMigrationsNormalizeInvoicePaymentReferences (0.36s)
+PASS
+ok      screenshot-api/storage 0.367s
+integration-tests-1 exited with code 0
+Это подтверждает, что миграции применились в PostgreSQL и тест проверил:
+отсутствие старых строковых полей payment_method и currency;
+наличие payment_method_id и currency_id;
+внешние ключи на справочники;
+методы bitcoin, card, bank;
+создание платежа с card и USD;
+отказ БД при ссылке на несуществующий метод оплаты.
+Строка PostgreSQL с payment_method_id=999999 — ожидаема: это именно проверка работы внешнего ключа, поэтому тест всё равно завершился успешно.
+Теперь можно удалить только тестовые контейнеры и volume:
+docker compose -p screenshot-go-integration -f docker-compose.integration.yml down -v
+Рабочие контейнеры приложения не будут затронуты.
+
+----------------
+
+Теперь можно запустить тестовую БД отдельно, выполнить миграционный тест, а затем подключиться к ней из HeidiSQL.
+Из корня проекта:
+# 1. Удалить старое тестовое окружение, если оно осталось от прошлого прогона
+docker compose -p screenshot-go-integration -f docker-compose.integration.yml down -v
+
+# 2. Поднять только изолированную тестовую PostgreSQL
+docker compose -p screenshot-go-integration -f docker-compose.integration.yml up -d --build postgres-integration
+
+# 3. Выполнить тест: миграции и тестовые записи будут созданы в этой БД
+docker compose -p screenshot-go-integration -f docker-compose.integration.yml run --rm integration-tests
+Важно: не используйте в этом режиме --abort-on-container-exit, иначе Docker остановит PostgreSQL сразу после теста.
+Параметры HeidiSQL:
+Тип сети: PostgreSQL (TCP/IP)
+Хост:     127.0.0.1
+Порт:     55432
+Пользователь: integration
+Пароль:  integration
+База:     screenshot_integration
+Тестовые данные можно посмотреть, например, запросом:
+SELECT * FROM payment_methods;
+SELECT * FROM currencies;
+SELECT * FROM btc_invoices;
+SELECT * FROM schema_migrations;
+Проверить, что контейнер работает:
+docker compose -p screenshot-go-integration -f docker-compose.integration.yml ps
+После ручной проверки удалить только тестовую БД, контейнер и её volume:
+docker compose -p screenshot-go-integration -f docker-compose.integration.yml down -v
+Рабочие контейнеры и PostgreSQL приложения это не затрагивает.
+
+-----------------
+
 
 
 

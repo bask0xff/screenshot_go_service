@@ -151,6 +151,6 @@ cd app
 The integration suite runs migrations against a dedicated PostgreSQL container. It does not use the application's `postgres` service or its data volume.
 
 ```powershell
-docker compose -f docker-compose.integration.yml up --build --abort-on-container-exit --exit-code-from integration-tests
-docker compose -f docker-compose.integration.yml down -v
+docker compose -p screenshot-go-integration -f docker-compose.integration.yml up --build --abort-on-container-exit --exit-code-from integration-tests
+docker compose -p screenshot-go-integration -f docker-compose.integration.yml down -v
 ```

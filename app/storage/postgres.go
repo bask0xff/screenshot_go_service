@@ -60,9 +60,9 @@ func (s *Storage) RunMigrations(cfg *config.Config) error {
 	return nil
 }
 
-// findMigrationsPath locates migrations relative to the current executable
-// directory. Tests execute from their package directory, while the server runs
-// from the application root, so a fixed relative path is not reliable.
+// findMigrationsPath walks up from the current working directory. Tests execute
+// from their package directory, while the server runs from the application root,
+// so a fixed relative path is not reliable.
 func findMigrationsPath() (string, error) {
 	dir, err := os.Getwd()
 	if err != nil {
