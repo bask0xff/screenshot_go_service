@@ -154,3 +154,16 @@ The integration suite runs migrations against a dedicated PostgreSQL container. 
 docker compose -p screenshot-go-integration -f docker-compose.integration.yml up --build --abort-on-container-exit --exit-code-from integration-tests
 docker compose -p screenshot-go-integration -f docker-compose.integration.yml down -v
 ```
+
+Теперь можно запустить тестовую БД отдельно, выполнить миграционный тест, а затем подключиться к ней из HeidiSQL.
+Из корня проекта:
+# 1. Удалить старое тестовое окружение, если оно осталось от прошлого прогона
+docker compose -p screenshot-go-integration -f docker-compose.integration.yml down -v
+
+# 2. Поднять только изолированную тестовую PostgreSQL
+docker compose -p screenshot-go-integration -f docker-compose.integration.yml up -d --build postgres-integration
+
+# 3. Выполнить тест: миграции и тестовые записи будут созданы в этой БД
+docker compose -p screenshot-go-integration -f docker-compose.integration.yml run --rm integration-tests
+Важно: не используйте в этом режиме --abort-on-container-exit, иначе Docker остановит PostgreSQL сразу после теста.
+
