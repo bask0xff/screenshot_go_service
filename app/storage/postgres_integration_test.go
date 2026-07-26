@@ -50,31 +50,42 @@ func TestMigrationsNormalizeInvoicePaymentReferencesAndPromoCodes(t *testing.T) 
 		t.Fatalf("create user: %v", err)
 	}
 
-	promoCode := fmt.Sprintf("INTG%08d", uniqueID%100000000)
-	promo, err := store.CreatePromoCode(promoCode, 15, 3, time.Now().Add(time.Hour))
-	if err != nil {
-		t.Fatalf("create promo code: %v", err)
-	}
-	if promo.Code != promoCode || promo.DiscountPercent != 15 || promo.MaxUses != 3 || promo.UsedCount != 0 {
-		t.Fatalf("unexpected created promo code: %#v", promo)
-	}
-	if err := store.UsePromoCode(promoCode); err != nil {
-		t.Fatalf("use promo code: %v", err)
-	}
-	promo, err = store.GetPromoCode(promoCode)
-	if err != nil {
-		t.Fatalf("get promo code: %v", err)
-	}
-	if promo.UsedCount != 1 {
-		t.Fatalf("expected promo code usage count 1, got %d", promo.UsedCount)
-	}
+	for index, paymentMethod := range []string{"bitcoin", "card", "bank"} {
+		promoCode := fmt.Sprintf("INTG%07d%d", uniqueID%10000000, index)
+		promo, err := store.CreatePromoCode(promoCode, 15, 3, time.Now().Add(time.Hour))
+		if err != nil {
+			t.Fatalf("create promo code for %s payment: %v", paymentMethod, err)
+		}
+		if promo.Code != promoCode || promo.DiscountPercent != 15 || promo.MaxUses != 3 || promo.UsedCount != 0 {
+			t.Fatalf("unexpected created promo code for %s payment: %#v", paymentMethod, promo)
+		}
+		if err := store.UsePromoCode(promoCode); err != nil {
+			t.Fatalf("use promo code for %s payment: %v", paymentMethod, err)
+		}
+		promo, err = store.GetPromoCode(promoCode)
+		if err != nil {
+			t.Fatalf("get promo code for %s payment: %v", paymentMethod, err)
+		}
+		if promo.UsedCount != 1 {
+			t.Fatalf("expected promo code usage count 1 for %s payment, got %d", paymentMethod, promo.UsedCount)
+		}
 
-	invoice, err := store.CreateInvoiceWithDetails(user.ID, fmt.Sprintf("integration-address-%d", uniqueID), 2500, "card", "USD", promoCode, "", false)
-	if err != nil {
-		t.Fatalf("create invoice with reference keys: %v", err)
-	}
-	if invoice.PaymentMethod != "card" || invoice.Currency != "USD" || invoice.PromoCode != promoCode {
-		t.Fatalf("unexpected invoice data: method=%q currency=%q promo=%q", invoice.PaymentMethod, invoice.Currency, invoice.PromoCode)
+		invoice, err := store.CreateInvoiceWithDetails(
+			user.ID,
+			fmt.Sprintf("integration-address-%d-%d", uniqueID, index),
+			2500,
+			paymentMethod,
+			"USD",
+			promoCode,
+			"",
+			false,
+		)
+		if err != nil {
+			t.Fatalf("create %s invoice with promo code: %v", paymentMethod, err)
+		}
+		if invoice.PaymentMethod != paymentMethod || invoice.Currency != "USD" || invoice.PromoCode != promoCode {
+			t.Fatalf("unexpected %s invoice data: method=%q currency=%q promo=%q", paymentMethod, invoice.PaymentMethod, invoice.Currency, invoice.PromoCode)
+		}
 	}
 
 	_, err = store.db.Exec(`
