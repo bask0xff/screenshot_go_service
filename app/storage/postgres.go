@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -41,7 +43,12 @@ func (s *Storage) RunMigrations(cfg *config.Config) error {
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBPort, cfg.DBName)
 
-	m, err := migrate.New("file://migrations", dsn)
+	migrationsPath, err := findMigrationsPath()
+	if err != nil {
+		return err
+	}
+
+	m, err := migrate.New("file://"+filepath.ToSlash(migrationsPath), dsn)
 	if err != nil {
 		return err
 	}
@@ -51,6 +58,35 @@ func (s *Storage) RunMigrations(cfg *config.Config) error {
 	}
 
 	return nil
+}
+
+// findMigrationsPath locates migrations relative to the current executable
+// directory. Tests execute from their package directory, while the server runs
+// from the application root, so a fixed relative path is not reliable.
+func findMigrationsPath() (string, error) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return "", fmt.Errorf("get working directory: %w", err)
+	}
+
+	for {
+		candidate := filepath.Join(dir, "migrations")
+		info, err := os.Stat(candidate)
+		if err == nil && info.IsDir() {
+			return filepath.Abs(candidate)
+		}
+		if err != nil && !os.IsNotExist(err) {
+			return "", fmt.Errorf("inspect migrations directory: %w", err)
+		}
+
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break
+		}
+		dir = parent
+	}
+
+	return "", fmt.Errorf("migrations directory not found from %q", dir)
 }
 
 // --- USER METHODS ---

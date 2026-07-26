@@ -1,0 +1,110 @@
+d:\Projects\2026\screenshot_go_service>docker compose -p screenshot-go-integration -f docker-compose.integration.yml up --build --abort-on-container-exit --exit-code-from integration-tests
+[+] Building 20.0s (12/12) FINISHED                                                                                                                                                                                     docker:desktop-linux
+ => [integration-tests internal] load build definition from Dockerfile                                                                                                                                                                  0.0s
+ => => transferring dockerfile: 489B                                                                                                                                                                                                    0.0s
+ => [integration-tests internal] load metadata for docker.io/library/golang:1.23-alpine                                                                                                                                                 1.6s
+ => [integration-tests auth] library/golang:pull token for registry-1.docker.io                                                                                                                                                         0.0s
+ => [integration-tests internal] load .dockerignore                                                                                                                                                                                     0.0s
+ => => transferring context: 2B                                                                                                                                                                                                         0.0s
+ => [integration-tests builder 1/6] FROM docker.io/library/golang:1.23-alpine@sha256:383395b794dffa5b53012a212365d40c8e37109a626ca30d6151c8348d380b5f                                                                                   0.0s
+ => [integration-tests internal] load build context                                                                                                                                                                                     1.2s
+ => => transferring context: 164.54kB                                                                                                                                                                                                   1.1s
+ => CACHED [integration-tests builder 2/6] WORKDIR /app                                                                                                                                                                                 0.0s
+ => [integration-tests builder 3/6] COPY go.mod go.sum ./                                                                                                                                                                               0.1s
+ => [integration-tests builder 4/6] RUN go mod download                                                                                                                                                                                 1.5s
+ => [integration-tests builder 5/6] COPY . .                                                                                                                                                                                            0.1s
+ => [integration-tests builder 6/6] RUN CGO_ENABLED=0 GOOS=linux go build -o server .                                                                                                                                                  14.7s
+ => [integration-tests] exporting to image                                                                                                                                                                                              0.7s
+ => => exporting layers                                                                                                                                                                                                                 0.6s
+ => => writing image sha256:9c217683f0a95175f8535c05443fde20051acf3bc5eb318794e36f9c249b0708                                                                                                                                            0.0s
+ => => naming to docker.io/library/screenshot-go-integration-integration-tests                                                                                                                                                          0.0s
+[+] Running 4/4
+ ✔ Network screenshot-go-integration_default                   Created                                                                                                                                                                  0.1s
+ ✔ Volume "screenshot-go-integration_integration-pgdata"       Created                                                                                                                                                                  0.0s
+ ✔ Container screenshot-go-integration-postgres-integration-1  Created                                                                                                                                                                  0.1s
+ ✔ Container screenshot-go-integration-integration-tests-1     Created                                                                                                                                                                  0.1s
+Attaching to integration-tests-1, postgres-integration-1
+postgres-integration-1  | The files belonging to this database system will be owned by user "postgres".
+postgres-integration-1  | This user must also own the server process.
+postgres-integration-1  |
+postgres-integration-1  | The database cluster will be initialized with locale "en_US.utf8".
+postgres-integration-1  | The default database encoding has accordingly been set to "UTF8".
+postgres-integration-1  | The default text search configuration will be set to "english".
+postgres-integration-1  |
+postgres-integration-1  | Data page checksums are disabled.
+postgres-integration-1  |
+postgres-integration-1  | fixing permissions on existing directory /var/lib/postgresql/data ... ok
+postgres-integration-1  | creating subdirectories ... ok
+postgres-integration-1  | selecting dynamic shared memory implementation ... posix
+postgres-integration-1  | selecting default max_connections ... 100
+postgres-integration-1  | selecting default shared_buffers ... 128MB
+postgres-integration-1  | selecting default time zone ... UTC
+postgres-integration-1  | creating configuration files ... ok
+postgres-integration-1  | running bootstrap script ... ok
+postgres-integration-1  | sh: locale: not found
+postgres-integration-1  | 2026-07-26 01:02:43.458 UTC [35] WARNING:  no usable system locales were found
+postgres-integration-1  | performing post-bootstrap initialization ... ok
+postgres-integration-1  | syncing data to disk ... ok
+postgres-integration-1  |
+postgres-integration-1  |
+postgres-integration-1  | Success. You can now start the database server using:
+postgres-integration-1  |
+postgres-integration-1  |     pg_ctl -D /var/lib/postgresql/data -l logfile start
+postgres-integration-1  |
+postgres-integration-1  | initdb: warning: enabling "trust" authentication for local connections
+postgres-integration-1  | initdb: hint: You can change this by editing pg_hba.conf or using the option -A, or --auth-local and --auth-host, the next time you run initdb.
+postgres-integration-1  | waiting for server to start....2026-07-26 01:02:44.262 UTC [41] LOG:  starting PostgreSQL 16.14 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+postgres-integration-1  | 2026-07-26 01:02:44.266 UTC [41] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+postgres-integration-1  | 2026-07-26 01:02:44.276 UTC [44] LOG:  database system was shut down at 2026-07-26 01:02:43 UTC
+postgres-integration-1  | 2026-07-26 01:02:44.283 UTC [41] LOG:  database system is ready to accept connections
+postgres-integration-1  |  done
+postgres-integration-1  | server started
+postgres-integration-1  | CREATE DATABASE
+postgres-integration-1  |
+postgres-integration-1  |
+postgres-integration-1  | /usr/local/bin/docker-entrypoint.sh: ignoring /docker-entrypoint-initdb.d/*
+postgres-integration-1  |
+postgres-integration-1  | waiting for server to shut down....2026-07-26 01:02:44.418 UTC [41] LOG:  received fast shutdown request
+postgres-integration-1  | 2026-07-26 01:02:44.422 UTC [41] LOG:  aborting any active transactions
+postgres-integration-1  | 2026-07-26 01:02:44.425 UTC [41] LOG:  background worker "logical replication launcher" (PID 47) exited with exit code 1
+postgres-integration-1  | 2026-07-26 01:02:44.425 UTC [42] LOG:  shutting down
+postgres-integration-1  | 2026-07-26 01:02:44.429 UTC [42] LOG:  checkpoint starting: shutdown immediate
+postgres-integration-1  | 2026-07-26 01:02:44.518 UTC [42] LOG:  checkpoint complete: wrote 926 buffers (5.7%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.023 s, sync=0.056 s, total=0.093 s; sync files=301, longest=0.006 s, average=0.001 s; distance=4283 kB, estimate=4283 kB; lsn=0/1925D70, redo lsn=0/1925D70
+postgres-integration-1  | 2026-07-26 01:02:44.529 UTC [41] LOG:  database system is shut down
+postgres-integration-1  |  done
+postgres-integration-1  | server stopped
+postgres-integration-1  |
+postgres-integration-1  | PostgreSQL init process complete; ready for start up.
+postgres-integration-1  |
+postgres-integration-1  | 2026-07-26 01:02:44.649 UTC [1] LOG:  starting PostgreSQL 16.14 on x86_64-pc-linux-musl, compiled by gcc (Alpine 15.2.0) 15.2.0, 64-bit
+postgres-integration-1  | 2026-07-26 01:02:44.649 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+postgres-integration-1  | 2026-07-26 01:02:44.649 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+postgres-integration-1  | 2026-07-26 01:02:44.656 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+postgres-integration-1  | 2026-07-26 01:02:44.665 UTC [57] LOG:  database system was shut down at 2026-07-26 01:02:44 UTC
+postgres-integration-1  | 2026-07-26 01:02:44.673 UTC [1] LOG:  database system is ready to accept connections
+integration-tests-1     | === RUN   TestMigrationsNormalizeInvoicePaymentReferences
+integration-tests-1     |     postgres_integration_test.go:29: apply migrations: open .: no such file or directory
+integration-tests-1     | --- FAIL: TestMigrationsNormalizeInvoicePaymentReferences (0.01s)
+integration-tests-1     | FAIL
+integration-tests-1     | FAIL  screenshot-api/storage  0.013s
+integration-tests-1     | FAIL
+integration-tests-1 exited with code 1
+Aborting on container exit...
+[+] Stopping 2/2 Desktop   o View Config   w Enable Watch
+ ✔ Container screenshot-go-integration-integration-tests-1     Stopped                                                                                                                                                                  0.0s
+ ✔ Container screenshot-go-integration-postgres-integration-1  Stopped                                                                                                                                                                  0.5s
+
+d:\Projects\2026\screenshot_go_service>docker ps
+CONTAINER ID   IMAGE                          COMMAND                  CREATED        STATUS                  PORTS                                                                                                         NAMES
+6e70899a126e   vue-notus-main-frontend        "docker-entrypoint.s…"   37 hours ago   Up 37 hours             8081/tcp, 0.0.0.0:8081->8080/tcp                                                                              vuejs-notus
+2d85aa320585   screenshot_go_service-api      "./server"               37 hours ago   Up 37 hours             0.0.0.0:8082->8082/tcp                                                                                        screenshot_go_service-api-1
+57f9e44a59e7   postgres:16-alpine             "docker-entrypoint.s…"   37 hours ago   Up 37 hours (healthy)   0.0.0.0:5433->5432/tcp                                                                                        screenshot_go_service-postgres-1
+85d43025a37f   ghcr.io/browserless/chromium   "./scripts/start.sh"     37 hours ago   Up 37 hours             0.0.0.0:3002->3000/tcp                                                                                        screenshot_go_service-browserless-1
+9729e5e3a9f2   anticaptchaio-frontend         "docker-entrypoint.s…"   2 days ago     Up 37 hours             0.0.0.0:8080->8080/tcp                                                                                        vue-frontend
+def2fc62f2b3   anticaptchaio-backend          "/microservice"          2 days ago     Up 37 hours             0.0.0.0:7070->7070/tcp                                                                                        go-backend
+895a08102410   postgres:16-alpine             "docker-entrypoint.s…"   2 days ago     Up 37 hours             0.0.0.0:5432->5432/tcp                                                                                        postgres
+e05fd4c4b18e   rabbitmq:3-management-alpine   "docker-entrypoint.s…"   2 days ago     Up 37 hours             4369/tcp, 5671/tcp, 0.0.0.0:5672->5672/tcp, 15671/tcp, 15691-15692/tcp, 25672/tcp, 0.0.0.0:15672->15672/tcp   rabbitmq
+da7d9b215a44   redis:7.2-alpine               "docker-entrypoint.s…"   2 days ago     Up 37 hours             0.0.0.0:6379->6379/tcp                                                                                        redis
+
+d:\Projects\2026\screenshot_go_service>
+

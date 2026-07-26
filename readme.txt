@@ -220,6 +220,31 @@ API-ключ: test-key.
 Курс BTC: фиксированный 50 000 USD.
 ----
 
+Из корня проекта D:\Projects\2026\screenshot_go_service запустите:
+docker compose -p screenshot-go-integration -f docker-compose.integration.yml up --build --abort-on-container-exit --exit-code-from integration-tests
+-p screenshot-go-integration принципиален: он создаёт отдельные контейнеры, сеть и volume, поэтому уже запущенный docker compose up -d с приложением и его PostgreSQL не затрагивается.
+Признаки успешного запуска:
+integration-tests-1  | === RUN   TestMigrationsNormalizeInvoicePaymentReferences
+integration-tests-1  | --- PASS: TestMigrationsNormalizeInvoicePaymentReferences
+integration-tests-1  | PASS
+integration-tests-1  | ok      screenshot-api/storage
+И PowerShell вернёт нулевой код:
+$LASTEXITCODE
+Ожидаемое значение — 0.
+Можно отдельно посмотреть журнал тестового контейнера:
+docker compose -p screenshot-go-integration -f docker-compose.integration.yml logs integration-tests
+Что этот тест действительно проверяет:
+запускает все миграции на новом, отдельном PostgreSQL;
+убеждается, что строковых btc_invoices.payment_method и btc_invoices.currency больше нет;
+проверяет наличие payment_method_id и currency_id;
+проверяет внешние ключи на payment_methods и currencies;
+проверяет начальные методы bitcoin, card, bank;
+создаёт реальный инвойс с card и USD;
+убеждается, что PostgreSQL отклоняет инвойс с несуществующими ID справочников.
+После проверки удалите только тестовую БД и контейнеры:
+docker compose -p screenshot-go-integration -f docker-compose.integration.yml down -v
+Чтобы повторить миграции с чистого состояния, всегда выполняйте down -v перед следующим запуском.
+-----------------
 
 
 
