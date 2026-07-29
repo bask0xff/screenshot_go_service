@@ -212,6 +212,7 @@ PS D:\Projects\2026\screenshot_go_service\app>
 Запустить один конкретный сценарий:
 go test -v -count=1 ./handler -run TestRegisterAndLogin
 go test -v -count=1 ./handler -run TestCreateInvoiceForEachPaymentMethod
+
 На каких данных тестируется:
 Пользователь: user@example.com, пароль secret; дополнительно проверяется неверный пароль.
 API-ключ: test-key.
@@ -223,16 +224,20 @@ API-ключ: test-key.
 Из корня проекта D:\Projects\2026\screenshot_go_service запустите:
 docker compose -p screenshot-go-integration -f docker-compose.integration.yml up --build --abort-on-container-exit --exit-code-from integration-tests
 -p screenshot-go-integration принципиален: он создаёт отдельные контейнеры, сеть и volume, поэтому уже запущенный docker compose up -d с приложением и его PostgreSQL не затрагивается.
+
 Признаки успешного запуска:
 integration-tests-1  | === RUN   TestMigrationsNormalizeInvoicePaymentReferences
 integration-tests-1  | --- PASS: TestMigrationsNormalizeInvoicePaymentReferences
 integration-tests-1  | PASS
 integration-tests-1  | ok      screenshot-api/storage
+
 И PowerShell вернёт нулевой код:
 $LASTEXITCODE
+
 Ожидаемое значение — 0.
 Можно отдельно посмотреть журнал тестового контейнера:
 docker compose -p screenshot-go-integration -f docker-compose.integration.yml logs integration-tests
+
 Что этот тест действительно проверяет:
 запускает все миграции на новом, отдельном PostgreSQL;
 убеждается, что строковых btc_invoices.payment_method и btc_invoices.currency больше нет;
@@ -241,6 +246,7 @@ docker compose -p screenshot-go-integration -f docker-compose.integration.yml lo
 проверяет начальные методы bitcoin, card, bank;
 создаёт реальный инвойс с card и USD;
 убеждается, что PostgreSQL отклоняет инвойс с несуществующими ID справочников.
+
 После проверки удалите только тестовую БД и контейнеры:
 docker compose -p screenshot-go-integration -f docker-compose.integration.yml down -v
 Чтобы повторить миграции с чистого состояния, всегда выполняйте down -v перед следующим запуском.
@@ -253,6 +259,7 @@ docker compose -p screenshot-go-integration -f docker-compose.integration.yml do
 PASS
 ok      screenshot-api/storage 0.367s
 integration-tests-1 exited with code 0
+
 Это подтверждает, что миграции применились в PostgreSQL и тест проверил:
 отсутствие старых строковых полей payment_method и currency;
 наличие payment_method_id и currency_id;
@@ -260,6 +267,7 @@ integration-tests-1 exited with code 0
 методы bitcoin, card, bank;
 создание платежа с card и USD;
 отказ БД при ссылке на несуществующий метод оплаты.
+
 Строка PostgreSQL с payment_method_id=999999 — ожидаема: это именно проверка работы внешнего ключа, поэтому тест всё равно завершился успешно.
 Теперь можно удалить только тестовые контейнеры и volume:
 docker compose -p screenshot-go-integration -f docker-compose.integration.yml down -v
@@ -278,6 +286,7 @@ docker compose -p screenshot-go-integration -f docker-compose.integration.yml up
 # 3. Выполнить тест: миграции и тестовые записи будут созданы в этой БД
 docker compose -p screenshot-go-integration -f docker-compose.integration.yml run --rm integration-tests
 Важно: не используйте в этом режиме --abort-on-container-exit, иначе Docker остановит PostgreSQL сразу после теста.
+
 Параметры HeidiSQL:
 Тип сети: PostgreSQL (TCP/IP)
 Хост:     127.0.0.1
@@ -285,11 +294,13 @@ docker compose -p screenshot-go-integration -f docker-compose.integration.yml ru
 Пользователь: integration
 Пароль:  integration
 База:     screenshot_integration
+
 Тестовые данные можно посмотреть, например, запросом:
 SELECT * FROM payment_methods;
 SELECT * FROM currencies;
 SELECT * FROM btc_invoices;
 SELECT * FROM schema_migrations;
+
 Проверить, что контейнер работает:
 docker compose -p screenshot-go-integration -f docker-compose.integration.yml ps
 После ручной проверки удалить только тестовую БД, контейнер и её volume:
