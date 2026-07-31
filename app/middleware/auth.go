@@ -18,13 +18,13 @@ func (m *AuthMiddleware) Authenticate(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		apiKey := r.Header.Get("X-API-Key")
 		if apiKey == "" {
-			http.Error(w, `{"error": "missing api key"}`, http.StatusUnauthorized)
+			http.Error(w, `{"error": "missing api key (X-API-Key)"}`, http.StatusUnauthorized)
 			return
 		}
 
 		key, err := m.storage.GetAPIKey(apiKey)
 		if err != nil {
-			http.Error(w, `{"error": "invalid api key"}`, http.StatusUnauthorized)
+			http.Error(w, `{"error": "invalid api key (GetAPIKey)"}`, http.StatusUnauthorized)
 			return
 		}
 
