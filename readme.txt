@@ -102,6 +102,8 @@ d:\Projects\2026\screenshot_go_service>
 
 -------------------------------
 
+Auth, Sign in:
+
 d:\Projects\2026\screenshot_go_service>curl -X POST "http://localhost:8082/auth/login" -H "Content-Type: application/json" -d "{\"email\":\"newuser@example.com\",\"password\":\"secret123\"}"
 {"api_key":{"id":1,"user_id":7,"key":"502e7d7e1b67209ba49512ab02dab62926497de204a81b2a3a5d2973bf3f6ae7","tier":"free","requests":0,"created_at":"2026-02-22T11:31:29.656724Z"}}
 
@@ -119,6 +121,8 @@ d:\Projects\2026\screenshot_go_service>curl "http://localhost:8082/screenshot?ur
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100  851k    0  851k    0     0  88841      0 --:--:--  0:00:09 --:--:--  251k
+
+Registration:
 
 d:\Projects\2026\screenshot_go_service>curl -X POST "http://localhost:8082/auth/register" -H "Content-Type: application/json" -d "{\"email\":\"newXXXuser@example.com\",\"password\":\"secret123\"}"
 {"user":{"id":8,"email":"newXXXuser@example.com","created_at":"2026-02-22T11:45:50.58443Z"},"api_key":{"id":2,"user_id":8,"key":"976a3af5ac83efdadb7d708b86639321970afb4bdc07867bbd4fbb95064ba4cf","tier":"free","requests":0,"created_at":"2026-02-22T11:45:50.586835Z"}}
